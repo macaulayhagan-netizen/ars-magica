@@ -7937,6 +7937,7 @@ function MagusEditor({
 }) {
   const [m, setM] = useState(() => JSON.parse(JSON.stringify(initial)));
   const spent = charPointsSpent(m.characteristics);
+  const techSpent = TECH_NAMES.reduce((s, t) => s + tri(m.arts[t]), 0);
   const set = patch => setM(p => ({
     ...p,
     ...patch
@@ -8056,13 +8057,28 @@ function MagusEditor({
     style: {
       marginTop: 20,
       display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-flex",
       alignItems: "center"
     }
   }, /*#__PURE__*/React.createElement("span", {
     className: "am-eyebrow"
   }, "Techniques"), /*#__PURE__*/React.createElement(InfoTip, {
     title: "Techniques"
-  }, "The five verbs of Hermetic magic \u2014 Creo (create), Intellego (perceive), Muto (transform), Perdo (destroy) and Rego (control). Every spell joins one Technique to one Form, and your score in the relevant Technique is added to your Casting Total. Most starting magi spread roughly 30 points across all fifteen Arts.")), /*#__PURE__*/React.createElement("div", {
+  }, "The five verbs of Hermetic magic \u2014 Creo (create), Intellego (perceive), Muto (transform), Perdo (destroy) and Rego (control). Every spell joins one Technique to one Form, and your score in the relevant Technique is added to your Casting Total. Raising an Art to score n costs n\xD7(n+1)/2 points (1, 3, 6, 10, 15\u2026), the same scale as Characteristics.")), /*#__PURE__*/React.createElement("span", {
+    className: "am-faint",
+    style: {
+      fontSize: 14
+    }
+  }, "Points spent ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "var(--lapis)"
+    }
+  }, techSpent))), /*#__PURE__*/React.createElement("div", {
     className: "am-arts",
     style: {
       marginTop: 8
