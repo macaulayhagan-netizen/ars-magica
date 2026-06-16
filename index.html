@@ -8383,21 +8383,28 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 
 /* Dice (signature) */
 .am-castbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;margin:18px 0 6px;}
-.am-die{width:96px;height:96px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond';font-weight:700;font-size:48px;position:relative;
-  background:radial-gradient(circle at 32% 26%, #2f3f78, var(--ink2));color:var(--gold-bright);
-  border:2px solid var(--lapis-bright);box-shadow:0 8px 22px rgba(0,0,0,.5), inset 0 2px 6px rgba(255,255,255,.12);
-  transition:transform .12s;}
+.am-die{width:104px;height:110px;position:relative;display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));transition:transform .12s;}
+.am-die-shape{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+.am-die .d10-body{fill:#26386b;stroke:#6f82c4;stroke-width:2.5;stroke-linejoin:round;}
+.am-die .d10-face{fill:#34488c;}
+.am-die .d10-facets{fill:none;stroke:#6175ba;stroke-width:1;opacity:.65;stroke-linecap:round;}
+.am-die-num{position:relative;z-index:2;font-family:'Cormorant Garamond';font-weight:700;font-size:38px;
+  color:var(--gold-bright);transform:translateY(-10px);text-shadow:0 1px 3px rgba(0,0,0,.65);}
 .am-die.rolling{animation:amspin .5s linear infinite;}
-.am-die.botch{background:radial-gradient(circle at 32% 26%, #7c2114, #2a0d08);border-color:var(--rubric-bright);color:#f0d9b8;}
-.am-die.crit{border-color:var(--gold-bright);box-shadow:0 0 26px rgba(214,172,66,.6),0 8px 22px rgba(0,0,0,.5);}
+.am-die.botch .d10-body{fill:#4f1209;stroke:#c1502f;}
+.am-die.botch .d10-face{fill:#7c2114;}
+.am-die.botch .d10-facets{stroke:#c1502f;}
+.am-die.botch .am-die-num{color:#f0d9b8;}
+.am-die.crit .d10-body{stroke:var(--gold-bright);stroke-width:3;}
+.am-die.crit{filter:drop-shadow(0 0 13px rgba(214,172,66,.7)) drop-shadow(0 8px 14px rgba(0,0,0,.5));}
 @keyframes amspin{to{transform:rotate(360deg);}}
 .am-chain{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
-.am-pip{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond';font-weight:700;font-size:17px;background:var(--ink2);color:var(--vellum);
-  border:1px solid var(--line-soft);}
-.am-pip.one{color:var(--gold-bright);border-color:var(--gold);}
-.am-pip.zero{color:var(--rubric-bright);border-color:var(--rubric);}
+.am-pip{width:32px;height:34px;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond';font-weight:700;font-size:16px;background:var(--ink2);color:var(--vellum);
+  clip-path:polygon(50% 3%, 92% 37%, 73% 80%, 50% 97%, 27% 80%, 8% 37%);}
+.am-pip.one{background:#3a331c;color:var(--gold-bright);}
+.am-pip.zero{background:#3f140d;color:var(--rubric-bright);}
 
 .am-verdict{font-family:'Cormorant Garamond';font-weight:700;text-align:center;font-size:clamp(28px,6vw,46px);
   letter-spacing:.5px;line-height:1;margin-top:6px;}
@@ -8405,6 +8412,23 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 .am-verdict.fail{color:var(--txt-soft);}
 .am-verdict.botch{color:var(--rubric);}
 .am-verdict-sub{text-align:center;color:var(--txt-soft);font-size:16px;margin-top:2px;}
+
+.am-zero-alert{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:14px;
+  background:rgba(124,33,20,.12);border:1px solid var(--rubric);border-radius:5px;padding:10px 14px;
+  color:var(--rubric);font-family:'Cormorant Garamond';font-weight:700;font-size:19px;text-align:center;}
+.am-zero-alert .mk{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--rubric);color:#f3ecd8;
+  display:flex;align-items:center;justify-content:center;font-size:16px;}
+.am-botch-steps{margin-top:14px;border:1px solid var(--line-soft);border-radius:6px;overflow:hidden;
+  background:rgba(255,255,255,.25);}
+.am-botch-steps .hd{background:rgba(124,33,20,.12);padding:9px 14px;font-family:'Cormorant Garamond';
+  font-weight:700;color:var(--rubric);font-size:16px;letter-spacing:.3px;border-bottom:1px solid var(--line-soft);}
+.am-bstep{display:flex;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line-soft);}
+.am-bstep:last-child{border-bottom:none;}
+.am-bstep .n{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--rubric);color:#f3ecd8;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;font-family:'Cormorant Garamond';}
+.am-bstep .bd{font-size:14px;line-height:1.55;color:var(--txt-soft);}
+.am-bstep .bd b{color:var(--txt);font-weight:700;}
+.am-bstep.good .n{background:#5a7d3a;}
 
 .am-readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:1px;background:var(--line-soft);
   border:1px solid var(--line-soft);border-radius:4px;overflow:hidden;margin-top:14px;}
@@ -9606,7 +9630,22 @@ function CastingView({
     className: "am-castbar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "am-die" + (rolling ? " rolling" : "") + (result && result.botched ? " botch" : "") + (result && result.exploded ? " crit" : "")
-  }, rolling ? face : result ? result.dieVal : "?"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("svg", {
+    className: "am-die-shape",
+    viewBox: "0 0 100 100",
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("polygon", {
+    className: "d10-body",
+    points: "50,3 92,37 73,80 50,97 27,80 8,37"
+  }), /*#__PURE__*/React.createElement("polygon", {
+    className: "d10-face",
+    points: "50,3 69,40 50,68 31,40"
+  }), /*#__PURE__*/React.createElement("path", {
+    className: "d10-facets",
+    d: "M31,40 L8,37 M69,40 L92,37 M31,40 L27,80 M69,40 L73,80 M50,68 L27,80 M50,68 L73,80 M50,68 L50,97"
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "am-die-num"
+  }, rolling ? face : result ? result.dieVal : "?")), /*#__PURE__*/React.createElement("button", {
     className: "am-btn am-btn-pri",
     style: {
       fontSize: 20,
@@ -9619,7 +9658,11 @@ function CastingView({
   }, revealChain.map((c, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "am-pip" + (c === 1 ? " one" : c === 0 ? " zero" : "")
-  }, c))) : null, result && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, c))) : null, result && /*#__PURE__*/React.createElement(React.Fragment, null, result.botchPossible && /*#__PURE__*/React.createElement("div", {
+    className: "am-zero-alert"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mk"
+  }, "!"), "You rolled a 0 \u2014 a botch check is triggered."), /*#__PURE__*/React.createElement("div", {
     className: "am-verdict " + verdict,
     style: {
       marginTop: 14
@@ -9676,7 +9719,35 @@ function CastingView({
     className: "k"
   }, "Total"), /*#__PURE__*/React.createElement("div", {
     className: "v"
-  }, result.total)))), log.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, result.total))), result.botchPossible && /*#__PURE__*/React.createElement("div", {
+    className: "am-botch-steps"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hd"
+  }, "Rolling a 0 \u2014 the botch sequence"), /*#__PURE__*/React.createElement("div", {
+    className: "am-bstep"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "n"
+  }, "1"), /*#__PURE__*/React.createElement("div", {
+    className: "bd"
+  }, /*#__PURE__*/React.createElement("b", null, "Count the roll as zero."), " The die adds nothing. Your casting total comes only from your Arts, Stamina, aura and any modifiers \u2014 here it totals ", /*#__PURE__*/React.createElement("b", null, result.total), ".")), /*#__PURE__*/React.createElement("div", {
+    className: "am-bstep"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "n"
+  }, "2"), /*#__PURE__*/React.createElement("div", {
+    className: "bd"
+  }, /*#__PURE__*/React.createElement("b", null, "Roll botch dice."), " The Storyguide assigns these by how dangerous the moment is \u2014 usually 1\u20133, occasionally more. This casting rolled ", /*#__PURE__*/React.createElement("b", null, result.botchRolls.length), " botch ", result.botchRolls.length === 1 ? "die" : "dice", ".")), /*#__PURE__*/React.createElement("div", {
+    className: "am-bstep" + (result.botched ? "" : " good")
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "n"
+  }, "3"), /*#__PURE__*/React.createElement("div", {
+    className: "bd"
+  }, /*#__PURE__*/React.createElement("b", null, "Check for the botch."), " The botch ", result.botchRolls.length === 1 ? "die" : "dice", " came up ", result.botchRolls.length ? result.botchRolls.join(", ") : "—", ". ", result.botched ? /*#__PURE__*/React.createElement(React.Fragment, null, "At least one is a 0, so the casting ", /*#__PURE__*/React.createElement("b", null, "botches"), ": it automatically fails and something goes wrong.") : /*#__PURE__*/React.createElement(React.Fragment, null, "None are 0, so there is ", /*#__PURE__*/React.createElement("b", null, "no botch"), ". The casting may still fail (the 0 makes the level hard to reach), but no disaster occurs."))), result.botched && /*#__PURE__*/React.createElement("div", {
+    className: "am-bstep"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "n"
+  }, "4"), /*#__PURE__*/React.createElement("div", {
+    className: "bd"
+  }, /*#__PURE__*/React.createElement("b", null, "Resolve the botch."), " ", result.botches > 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, result.botches, " zeros means a ", /*#__PURE__*/React.createElement("b", null, "multiple botch"), " \u2014 proportionally worse. In combat, a multiple botch on a defence is often serious or fatal.") : /*#__PURE__*/React.createElement(React.Fragment, null, "A ", /*#__PURE__*/React.createElement("b", null, "single botch"), ": something goes badly wrong, such as a spell rebounding on the caster, a laboratory accident, or a weapon dropped mid-fight."))))), log.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "am-log"
   }, /*#__PURE__*/React.createElement("div", {
     className: "am-eyebrow",
