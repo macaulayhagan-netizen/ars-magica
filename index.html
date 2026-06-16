@@ -7847,6 +7847,34 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 .am-info-pop h4{margin:0 0 5px;font-family:'Cormorant Garamond';font-size:18px;color:var(--rubric);
   font-weight:700;text-transform:none;letter-spacing:.3px;}
 .am-info-pop p{margin:0;font-size:14px;line-height:1.5;color:var(--txt-soft);font-weight:400;}
+
+/* Primer / how-to-play */
+.am-guide{max-width:780px;}
+.am-lead{font-family:'Cormorant Garamond',serif;font-size:20px;line-height:1.5;color:var(--txt);
+  font-style:italic;margin:6px 0 16px;}
+.am-guide h3{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:21px;color:var(--rubric);
+  margin:24px 0 6px;letter-spacing:.3px;}
+.am-guide p{font-size:15.5px;line-height:1.6;color:var(--txt-soft);margin:0 0 10px;}
+.am-guide p b,.am-guide li b{color:var(--txt);font-weight:700;}
+.am-guide ul,.am-guide ol{margin:0 0 10px;padding-left:20px;color:var(--txt-soft);
+  font-size:15.5px;line-height:1.6;}
+.am-guide li{margin:5px 0;}
+.am-roles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:8px 0 4px;}
+.am-role{background:rgba(255,255,255,.42);border:1px solid var(--line-soft);border-left:4px solid var(--lapis);
+  border-radius:3px;padding:10px 12px;}
+.am-role b{font-family:'Cormorant Garamond';font-weight:700;font-size:17px;color:var(--txt);display:block;}
+.am-role span{font-size:13.5px;color:var(--txt-soft);line-height:1.45;}
+.am-callout{background:rgba(42,74,156,.08);border:1px solid var(--lapis);border-radius:4px;
+  padding:12px 14px;margin:10px 0 12px;}
+.am-callout .eq{font-family:'Cormorant Garamond';font-weight:700;font-size:18px;color:var(--lapis);line-height:1.4;}
+.am-callout .nb{font-size:13.5px;color:var(--txt-soft);margin-top:5px;line-height:1.5;}
+.am-rules-cta{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:24px;
+  border-top:1px dashed var(--line-soft);padding-top:16px;}
+.am-rules-cta a{display:inline-block;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:16px;
+  background:var(--lapis);border:1px solid #1d356f;color:#f3ecd8;border-radius:3px;padding:9px 18px;
+  text-decoration:none;transition:.16s;}
+.am-rules-cta a:hover{background:var(--lapis-bright);}
+.am-rules-cta .hint{font-size:13.5px;color:var(--txt-soft);font-style:italic;flex:1;min-width:200px;}
 @media (prefers-reduced-motion: reduce){.am-die.rolling{animation:none;} .am-card:hover{transform:none;}}
 `;
 
@@ -9071,6 +9099,45 @@ function CastingView({
 }
 
 /* ============================================================ */
+/*                          PRIMER                              */
+/* ============================================================ */
+function PrimerView() {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "am-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-pad am-guide"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-eyebrow"
+  }, "A Gentle Primer"), /*#__PURE__*/React.createElement("h2", {
+    className: "am-h"
+  }, "How to Play"), /*#__PURE__*/React.createElement("p", {
+    className: "am-lead"
+  }, "Ars Magica is a roleplaying game of wizards in a mythic version of medieval Europe, around the year 1220 \u2014 a world where magic, faeries, angels and demons are quietly real. You don't need to know any of the rules to start; this page covers just enough to make sense of everything else here."), /*#__PURE__*/React.createElement("h3", null, "What kind of game is this?"), /*#__PURE__*/React.createElement("p", null, "It's a ", /*#__PURE__*/React.createElement("b", null, "troupe"), " game: the group shares a covenant (a community of wizards) and most players have more than one character, swapping between them as different stories call for different people. Tales often span months or years of game-time, so characters grow, research new magic, and leave their mark on the world."), /*#__PURE__*/React.createElement("h3", null, "Who you play"), /*#__PURE__*/React.createElement("div", {
+    className: "am-roles"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-role"
+  }, /*#__PURE__*/React.createElement("b", null, "Magus"), /*#__PURE__*/React.createElement("span", null, "A Hermetic wizard with the Gift \u2014 the powerful, spell-casting heart of the game.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-role"
+  }, /*#__PURE__*/React.createElement("b", null, "Companion"), /*#__PURE__*/React.createElement("span", null, "A skilled, non-wizard ally: a knight, scholar, faerie-touched rogue, and so on.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-role"
+  }, /*#__PURE__*/React.createElement("b", null, "Grog"), /*#__PURE__*/React.createElement("span", null, "Everyday folk of the covenant \u2014 guards, servants, and helpers who round out a story."))), /*#__PURE__*/React.createElement("h3", null, "Casting a spell"), /*#__PURE__*/React.createElement("p", null, "Every Hermetic spell is a ", /*#__PURE__*/React.createElement("b", null, "Technique"), " (a verb \u2014 what you're doing) joined to a", /*#__PURE__*/React.createElement("b", null, " Form"), " (a noun \u2014 what you're doing it to). \u201CCreo Ignem,\u201D for instance, is", /*#__PURE__*/React.createElement("i", null, " create fire"), ". There are five Techniques and ten Forms, and your scores in the pair a spell uses feed straight into your roll:"), /*#__PURE__*/React.createElement("div", {
+    className: "am-callout"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "eq"
+  }, "Casting Total = Technique + Form + Stamina + magic aura + a die roll (+ any modifiers)"), /*#__PURE__*/React.createElement("div", {
+    className: "nb"
+  }, "Meet or beat the spell's ", /*#__PURE__*/React.createElement("b", null, "Level"), " and the spell works. The amount you beat it by is your", /*#__PURE__*/React.createElement("b", null, " Penetration"), " \u2014 how strongly the magic pushes through a resistant target's defences.")), /*#__PURE__*/React.createElement("p", null, "A few spells also need ", /*#__PURE__*/React.createElement("b", null, "requisites"), " (extra Arts). When they do, you use the lowest of the applicable Techniques and the lowest of the applicable Forms \u2014 the magic is only as strong as its weakest part."), /*#__PURE__*/React.createElement("h3", null, "The stress die \u2014 and botches"), /*#__PURE__*/React.createElement("p", null, "Casting uses a ", /*#__PURE__*/React.createElement("b", null, "stress die"), ": a ten-sided die where a roll of 1 \u201Cexplodes\u201D (you roll again and double the result, which can chain upward for a thrilling success), while a 0 is dangerous \u2014 it can mean a ", /*#__PURE__*/React.createElement("b", null, "botch"), ", where the magic goes wrong. The greater the danger, the more botch dice you risk. You don't have to track any of this by hand: the ", /*#__PURE__*/React.createElement("b", null, "Casting Chamber"), " rolls the stress die, handles the explosions and botch checks, and shows you the verdict."), /*#__PURE__*/React.createElement("h3", null, "Building a magus"), /*#__PURE__*/React.createElement("ul", null, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Characteristics"), " \u2014 eight inborn traits (Intelligence, Stamina, and so on), bought with a small pool of points."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Techniques & Forms (the Arts)"), " \u2014 the fifteen magical skills; higher scores mean stronger, more reliable spells."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "House"), " \u2014 the Hermetic tradition your magus was trained in, each with its own flavour and tricks."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Confidence"), " \u2014 a pool of self-belief you spend for a +3 in a crucial moment (magi start with 3)."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Magic aura"), " \u2014 the strength of magic where you usually cast; it adds straight to your Casting Totals.")), /*#__PURE__*/React.createElement("p", null, "Tap the ", /*#__PURE__*/React.createElement("b", null, "?"), " beside any heading in the character editor for a quick refresher on that piece."), /*#__PURE__*/React.createElement("h3", null, "Using this companion"), /*#__PURE__*/React.createElement("ol", null, /*#__PURE__*/React.createElement("li", null, "Open ", /*#__PURE__*/React.createElement("b", null, "Magi"), " and inscribe a character \u2014 set their Characteristics, Arts, House and the rest. They're saved to your browser automatically."), /*#__PURE__*/React.createElement("li", null, "Browse the ", /*#__PURE__*/React.createElement("b", null, "Grimoire"), " of 372 spells, filter by Technique or Form, and send any spell to the Casting Chamber."), /*#__PURE__*/React.createElement("li", null, "In the ", /*#__PURE__*/React.createElement("b", null, "Casting Chamber"), ", pick a magus, reshape the spell's words and Range/Duration/Target, watch the Level recompute, then roll.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-rules-cta"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://www.redcap.org/page/Ars_Magica_Reference_Document",
+    target: "_blank",
+    rel: "noreferrer"
+  }, "Read the full rules \u2192"), /*#__PURE__*/React.createElement("span", {
+    className: "hint"
+  }, "The complete Ars Magica 5th Edition reference document, free to read under CC BY-SA 4.0 (Project Redcap)."))));
+}
+
+/* ============================================================ */
 /*                          ROOT                                */
 /* ============================================================ */
 function App() {
@@ -9111,11 +9178,11 @@ function App() {
     className: "am-rule"
   }), /*#__PURE__*/React.createElement("nav", {
     className: "am-nav"
-  }, [["magi", "Magi"], ["grimoire", "Grimoire"], ["casting", "Casting Chamber"]].map(([k, label]) => /*#__PURE__*/React.createElement("button", {
+  }, [["learn", "How to Play"], ["magi", "Magi"], ["grimoire", "Grimoire"], ["casting", "Casting Chamber"]].map(([k, label]) => /*#__PURE__*/React.createElement("button", {
     key: k,
     className: "am-tab" + (view === k ? " on" : ""),
     onClick: () => setView(k)
-  }, label)))), view === "magi" && /*#__PURE__*/React.createElement(MagiView, {
+  }, label)))), view === "learn" && /*#__PURE__*/React.createElement(PrimerView, null), view === "magi" && /*#__PURE__*/React.createElement(MagiView, {
     roster: roster,
     setRoster: setRoster,
     selectedId: selectedId,
@@ -9130,7 +9197,7 @@ function App() {
     setWorkSpell: setWorkSpell
   }), /*#__PURE__*/React.createElement("div", {
     className: "am-foot"
-  }, "Rules per Ars Magica 5th Edition (CC BY 4.0, Project Redcap). Spell collection: the", " ", /*#__PURE__*/React.createElement("a", {
+  }, "Rules per Ars Magica 5th Edition (CC BY-SA 4.0, Project Redcap). Spell collection: the", " ", /*#__PURE__*/React.createElement("a", {
     href: "https://github.com/swdevlin/ars-magica-grimoire",
     target: "_blank",
     rel: "noreferrer"
