@@ -8430,6 +8430,11 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 .am-bstep .bd b{color:var(--txt);font-weight:700;}
 .am-bstep.good .n{background:#5a7d3a;}
 
+.am-lectern-desc{margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft);}
+.am-lectern-desc p{margin:0 0 6px;font-size:14.5px;line-height:1.55;color:var(--txt-soft);}
+.am-lectern-desc p:last-child{margin-bottom:0;}
+.am-lectern-desc .lore{font-style:italic;color:var(--txt-faint);border-left:3px solid var(--line-soft);padding-left:9px;}
+
 .am-readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:1px;background:var(--line-soft);
   border:1px solid var(--line-soft);border-radius:4px;overflow:hidden;margin-top:14px;}
 .am-readout .cell{background:#efe5cf;padding:8px 6px;text-align:center;}
@@ -9453,7 +9458,13 @@ function CastingView({
   }, [...SPELLS].sort((a, b) => a.name.localeCompare(b.name)).map(s => /*#__PURE__*/React.createElement("option", {
     key: s.id,
     value: s.name
-  }, s.name))))))), /*#__PURE__*/React.createElement("div", {
+  }, s.name))))), workSpell && workSpell.description && workSpell.description.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "am-lectern-desc"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "am-label"
+  }, "Effect"), workSpell.description.map((p, i) => /*#__PURE__*/React.createElement("p", {
+    key: i
+  }, p))))), /*#__PURE__*/React.createElement("div", {
     className: "am-panel",
     style: {
       borderTop: `5px solid ${col}`
