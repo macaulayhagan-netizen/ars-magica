@@ -8435,6 +8435,32 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 .am-lectern-desc p:last-child{margin-bottom:0;}
 .am-lectern-desc .lore{font-style:italic;color:var(--txt-faint);border-left:3px solid var(--line-soft);padding-left:9px;}
 
+/* characteristics definition list */
+.am-deflist{display:grid;gap:8px;margin:8px 0 4px;}
+.am-def{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:baseline;}
+.am-def b{font-family:'Cormorant Garamond';font-weight:700;font-size:16px;color:var(--txt);}
+.am-def span{font-size:14.5px;line-height:1.5;color:var(--txt-soft);}
+@media (max-width:560px){.am-def{grid-template-columns:1fr;gap:1px;}}
+
+/* houses */
+.am-house-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:6px 0 8px;}
+.am-house{background:rgba(255,255,255,.42);border:1px solid var(--line-soft);border-left:4px solid var(--lapis);
+  border-radius:4px;padding:11px 13px;}
+.am-house .hn{font-family:'Cormorant Garamond';font-weight:700;font-size:18px;color:var(--txt);line-height:1.15;}
+.am-house .hf{font-size:11.5px;color:var(--txt-faint);text-transform:uppercase;letter-spacing:.6px;margin:1px 0 6px;}
+.am-house p{font-size:13.5px;line-height:1.5;color:var(--txt-soft);margin:0 0 7px;}
+.am-house .hl{font-size:13px;color:var(--txt-soft);border-top:1px dashed var(--line-soft);padding-top:6px;}
+.am-house .hl b{color:var(--lapis);}
+
+/* world map */
+.am-map{height:540px;border-radius:6px;overflow:hidden;border:1px solid var(--line-soft);background:#dcd3bf;}
+.am-pin-wrap{background:transparent !important;border:0 !important;}
+.am-pin{display:block;width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  background:var(--gold);border:2px solid #5b4a1e;box-shadow:0 1px 3px rgba(0,0,0,.5);}
+.am-pop b{font-family:'Cormorant Garamond';font-size:15px;color:#241c14;}
+.am-pop .t{font-size:12px;color:#5b4e3a;margin-top:2px;}
+.am-pop .p{font-size:12px;color:#7d6c50;font-style:italic;margin-top:1px;}
+
 .am-readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:1px;background:var(--line-soft);
   border:1px solid var(--line-soft);border-radius:4px;overflow:hidden;margin-top:14px;}
 .am-readout .cell{background:#efe5cf;padding:8px 6px;text-align:center;}
@@ -9778,6 +9804,286 @@ function CastingView({
 }
 
 /* ============================================================ */
+/*                      HOUSES & THE MAP                        */
+/* ============================================================ */
+const HOUSE_DATA = [{
+  house: "Bonisagus",
+  cat: "True Lineage",
+  founder: "Bonisagus",
+  theme: "Research and the foundations of magic — creators of Magic Theory and the Parma Magica, and first among equals.",
+  domus: "Durenmar",
+  tribunal: "Rhine Tribunal",
+  place: "the Black Forest, Germany",
+  lat: 48.0,
+  lng: 8.2
+}, {
+  house: "Guernicus",
+  cat: "True Lineage",
+  founder: "Guernicus",
+  theme: "The Quaesitores — keepers of Hermetic law who investigate and judge crimes against the Order.",
+  domus: "Magvillus",
+  tribunal: "Roman Tribunal",
+  place: "central Italy",
+  lat: 41.9,
+  lng: 12.7
+}, {
+  house: "Mercere",
+  cat: "True Lineage",
+  founder: "Mercere",
+  theme: "The Redcaps — messengers (many of them ungifted) who carry word and parcels and bind the Order together.",
+  domus: "Harco",
+  tribunal: "Roman Tribunal",
+  place: "the Italian peninsula",
+  lat: 43.4,
+  lng: 12.1
+}, {
+  house: "Tremere",
+  cat: "True Lineage",
+  founder: "Tremere",
+  theme: "Rigidly disciplined, hierarchical and strategic; masters of certamen and patient, meticulous planning.",
+  domus: "Coeris",
+  tribunal: "Transylvanian Tribunal",
+  place: "Transylvania",
+  lat: 46.6,
+  lng: 24.5
+}, {
+  house: "Bjornaer",
+  cat: "Mystery Cult",
+  founder: "Birna",
+  theme: "Beast-magi, each bound to a Heartbeast — an animal form that expresses their true nature.",
+  domus: "Crintera",
+  tribunal: "Rhine Tribunal",
+  place: "the isle of Rügen, on the Baltic coast",
+  lat: 54.4,
+  lng: 13.4
+}, {
+  house: "Criamon",
+  cat: "Mystery Cult",
+  founder: "Criamon",
+  theme: "Tattooed mystics seeking the Enigma — the ultimate nature of reality. Apolitical, and very strange.",
+  domus: "The Cave of Twisting Shadows",
+  tribunal: "Greater Alps Tribunal",
+  place: "the Alps",
+  lat: 46.4,
+  lng: 9.2
+}, {
+  house: "Merinita",
+  cat: "Mystery Cult",
+  founder: "Merinita",
+  theme: "Faerie magi, aloof from mundane and Hermetic affairs alike, versed in the magic of the fae.",
+  domus: "Irencillia",
+  tribunal: "Rhine Tribunal",
+  place: "faerie woods of the south-east Rhine",
+  lat: 48.1,
+  lng: 8.6
+}, {
+  house: "Verditius",
+  cat: "Mystery Cult",
+  founder: "Verditius",
+  theme: "Proud master enchanters and artificers — the finest item-makers in the Order, bound by oaths of craft.",
+  domus: "Verdi",
+  tribunal: "Roman Tribunal",
+  place: "the island of Sardinia",
+  lat: 40.1,
+  lng: 9.1
+}, {
+  house: "Flambeau",
+  cat: "Societas",
+  founder: "Flambeau",
+  theme: "Martial magi, masters of combat and especially fire; the champions and warriors of the Order.",
+  domus: "Castra Solis",
+  tribunal: "Provençal Tribunal",
+  place: "the Pyrenees",
+  lat: 42.7,
+  lng: 1.8
+}, {
+  house: "Jerbiton",
+  cat: "Societas",
+  founder: "Jerbiton",
+  theme: "Lovers of art, beauty and civilisation; the House most engaged with the mundane world.",
+  domus: "Valnastium",
+  tribunal: "Greater Alps Tribunal",
+  place: "the Alps",
+  lat: 46.8,
+  lng: 8.0
+}, {
+  house: "Tytalus",
+  cat: "Societas",
+  founder: "Tytalus",
+  theme: "Seekers of growth through conflict and challenge — brilliant and dangerous, once scarred by diabolism.",
+  domus: "Fudarus",
+  tribunal: "Normandy Tribunal",
+  place: "the isle of Ushant, off Brittany",
+  lat: 48.46,
+  lng: -5.1
+}, {
+  house: "Ex Miscellanea",
+  cat: "Societas",
+  founder: "Pralix",
+  theme: "The youngest and most diverse House — a catch-all of hedge traditions and varied wizards.",
+  domus: "Cad Gadu",
+  tribunal: "Stonehenge Tribunal",
+  place: "the regios of south Wales",
+  lat: 51.8,
+  lng: -3.7
+}];
+const HOUSE_CATS = [["True Lineage", "True Lineages", "Joined only by being trained within the lineage — descent from the Founder is everything."], ["Mystery Cult", "Mystery Cults", "Joined through initiation into secret inner teachings and supernatural Mysteries."], ["Societas", "Societates", "A society joined by choice and shared outlook rather than blood or secret rite."]];
+function HousesView({
+  onSeeMap
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "am-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-pad am-guide"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-eyebrow"
+  }, "The Order of Hermes"), /*#__PURE__*/React.createElement("h2", {
+    className: "am-h"
+  }, "The Twelve Houses"), /*#__PURE__*/React.createElement("p", {
+    className: "am-lead"
+  }, "Every magus belongs to one of the twelve Houses of Hermes \u2014 the traditions descended from the Order's Founders. Each has its own character and secrets, and a ", /*#__PURE__*/React.createElement("i", null, "domus magna"), " (\u201Cgreat house\u201D): the covenant at its heart."), /*#__PURE__*/React.createElement("button", {
+    className: "am-btn am-btn-pri",
+    style: {
+      marginBottom: 4
+    },
+    onClick: onSeeMap
+  }, "See them on the map \u2192"), HOUSE_CATS.map(([key, label, blurb]) => /*#__PURE__*/React.createElement("div", {
+    key: key
+  }, /*#__PURE__*/React.createElement("h3", null, label), /*#__PURE__*/React.createElement("p", {
+    style: {
+      marginTop: 0
+    }
+  }, blurb), /*#__PURE__*/React.createElement("div", {
+    className: "am-house-grid"
+  }, HOUSE_DATA.filter(h => h.cat === key).map(h => /*#__PURE__*/React.createElement("div", {
+    className: "am-house",
+    key: h.house
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hn"
+  }, "House ", h.house), /*#__PURE__*/React.createElement("div", {
+    className: "hf"
+  }, "Founder \xB7 ", h.founder), /*#__PURE__*/React.createElement("p", null, h.theme), /*#__PURE__*/React.createElement("div", {
+    className: "hl"
+  }, /*#__PURE__*/React.createElement("b", null, h.domus), " \u2014 ", h.tribunal, " ", /*#__PURE__*/React.createElement("span", {
+    className: "am-faint"
+  }, "(", h.place, ")"))))))), /*#__PURE__*/React.createElement("div", {
+    className: "am-rules-cta"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://www.redcap.org/page/Houses",
+    target: "_blank",
+    rel: "noreferrer"
+  }, "Read more on the Houses \u2192"), /*#__PURE__*/React.createElement("span", {
+    className: "hint"
+  }, "Fuller detail on every House and its lineage at Project Redcap."))));
+}
+
+// Leaflet is loaded on demand from a CDN; the map degrades to a list if it can't load.
+let _leafletPromise = null;
+function loadLeaflet() {
+  if (typeof window === "undefined") return Promise.reject(new Error("no window"));
+  if (window.L) return Promise.resolve(window.L);
+  if (_leafletPromise) return _leafletPromise;
+  _leafletPromise = new Promise((resolve, reject) => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    js.async = true;
+    js.onload = () => resolve(window.L);
+    js.onerror = () => reject(new Error("leaflet failed to load"));
+    document.head.appendChild(js);
+  });
+  return _leafletPromise;
+}
+function MapView() {
+  const elRef = useRef(null);
+  const mapRef = useRef(null);
+  const [status, setStatus] = useState("loading");
+  useEffect(() => {
+    let cancelled = false;
+    loadLeaflet().then(L => {
+      if (cancelled || !elRef.current || mapRef.current) return;
+      const map = L.map(elRef.current, {
+        scrollWheelZoom: false
+      }).setView([46.5, 10], 4);
+      mapRef.current = map;
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        minZoom: 3,
+        maxZoom: 9,
+        attribution: "© OpenStreetMap contributors"
+      }).addTo(map);
+      const icon = L.divIcon({
+        className: "am-pin-wrap",
+        html: '<span class="am-pin"></span>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 16],
+        popupAnchor: [0, -15]
+      });
+      HOUSE_DATA.forEach(h => {
+        L.marker([h.lat, h.lng], {
+          icon
+        }).addTo(map).bindPopup(`<div class="am-pop"><b>${h.domus}</b><div class="t">House ${h.house} · ${h.tribunal}</div><div class="p">${h.place}</div></div>`);
+      });
+      setTimeout(() => {
+        if (!cancelled && mapRef.current) mapRef.current.invalidateSize();
+      }, 250);
+      if (!cancelled) setStatus("ready");
+    }).catch(() => {
+      if (!cancelled) setStatus("error");
+    });
+    return () => {
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "am-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-pad am-guide"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-eyebrow"
+  }, "Mythic Europe"), /*#__PURE__*/React.createElement("h2", {
+    className: "am-h"
+  }, "The World Map"), /*#__PURE__*/React.createElement("p", {
+    className: "am-lead"
+  }, "Mythic Europe is the real medieval world of around 1220, seen through a lens of magic. The markers show the ", /*#__PURE__*/React.createElement("i", null, "domus magna"), " of each of the twelve Houses; tap one for its tale. Locations are placed approximately."), status !== "error" && /*#__PURE__*/React.createElement("div", {
+    className: "am-map",
+    ref: elRef
+  }), status === "error" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "am-faint",
+    style: {
+      marginTop: 0
+    }
+  }, "The interactive map needs an internet connection to load. Here are the House seats and where they lie:"), /*#__PURE__*/React.createElement("div", {
+    className: "am-house-grid"
+  }, HOUSE_DATA.map(h => /*#__PURE__*/React.createElement("div", {
+    className: "am-house",
+    key: h.house
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hn"
+  }, h.domus), /*#__PURE__*/React.createElement("div", {
+    className: "hl",
+    style: {
+      borderTop: "none",
+      paddingTop: 2
+    }
+  }, "House ", h.house, " \u2014 ", h.tribunal, " ", /*#__PURE__*/React.createElement("span", {
+    className: "am-faint"
+  }, "(", h.place, ")")))))), /*#__PURE__*/React.createElement("p", {
+    className: "am-faint am-i",
+    style: {
+      fontSize: 13,
+      marginTop: 10
+    }
+  }, "Map tiles \xA9 OpenStreetMap contributors. The Order also gathers in thirteen Tribunals across Mythic Europe \u2014 among them Rome, the Rhine, the Greater Alps, Normandy, Proven\xE7al, Iberia, Stonehenge, Loch Leglean, Hibernia, Novgorod, the Levant, Thebes and Transylvania.")));
+}
+
+/* ============================================================ */
 /*                          PRIMER                              */
 /* ============================================================ */
 function PrimerView() {
@@ -9799,13 +10105,39 @@ function PrimerView() {
     className: "am-role"
   }, /*#__PURE__*/React.createElement("b", null, "Companion"), /*#__PURE__*/React.createElement("span", null, "A skilled, non-wizard ally: a knight, scholar, faerie-touched rogue, and so on.")), /*#__PURE__*/React.createElement("div", {
     className: "am-role"
-  }, /*#__PURE__*/React.createElement("b", null, "Grog"), /*#__PURE__*/React.createElement("span", null, "Everyday folk of the covenant \u2014 guards, servants, and helpers who round out a story."))), /*#__PURE__*/React.createElement("h3", null, "Casting a spell"), /*#__PURE__*/React.createElement("p", null, "Every Hermetic spell is a ", /*#__PURE__*/React.createElement("b", null, "Technique"), " (a verb \u2014 what you're doing) joined to a", /*#__PURE__*/React.createElement("b", null, " Form"), " (a noun \u2014 what you're doing it to). \u201CCreo Ignem,\u201D for instance, is", /*#__PURE__*/React.createElement("i", null, " create fire"), ". There are five Techniques and ten Forms, and your scores in the pair a spell uses feed straight into your roll:"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("b", null, "Grog"), /*#__PURE__*/React.createElement("span", null, "Everyday folk of the covenant \u2014 guards, servants, and helpers who round out a story."))), /*#__PURE__*/React.createElement("h3", null, "Between stories \u2014 what idle characters do"), /*#__PURE__*/React.createElement("p", null, "Ars Magica runs on ", /*#__PURE__*/React.createElement("b", null, "seasons"), ". Only one character is usually the focus of a given tale, so most of the troupe is always \u201Coff-screen,\u201D and for every season not spent adventuring a character does one major activity:"), /*#__PURE__*/React.createElement("ul", null, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Magi"), " retreat to the laboratory \u2014 inventing spells, enchanting magic items, researching the Arts, teaching apprentices, or brewing a longevity ritual to hold off old age."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Companions"), " pursue their own ambitions: courtly intrigue, scholarship, a personal quest, running the covenant's worldly affairs, or simply recovering from the last adventure."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Grogs"), " keep the covenant alive day to day \u2014 standing watch, patrolling, drilling, crafting and labouring \u2014 and rotate in and out of stories as extra hands are needed.")), /*#__PURE__*/React.createElement("p", null, "Because each player controls several characters, the spotlight passes around the table: the wizard who sat out this adventure may be the hero of the next."), /*#__PURE__*/React.createElement("h3", null, "Casting a spell"), /*#__PURE__*/React.createElement("p", null, "Every Hermetic spell is a ", /*#__PURE__*/React.createElement("b", null, "Technique"), " (a verb \u2014 what you're doing) joined to a", /*#__PURE__*/React.createElement("b", null, " Form"), " (a noun \u2014 what you're doing it to). \u201CCreo Ignem,\u201D for instance, is", /*#__PURE__*/React.createElement("i", null, " create fire"), ". There are five Techniques and ten Forms, and your scores in the pair a spell uses feed straight into your roll:"), /*#__PURE__*/React.createElement("div", {
     className: "am-callout"
   }, /*#__PURE__*/React.createElement("div", {
     className: "eq"
   }, "Casting Total = Technique + Form + Stamina + magic aura + a die roll (+ any modifiers)"), /*#__PURE__*/React.createElement("div", {
     className: "nb"
-  }, "Meet or beat the spell's ", /*#__PURE__*/React.createElement("b", null, "Level"), " and the spell works. The amount you beat it by is your", /*#__PURE__*/React.createElement("b", null, " Penetration"), " \u2014 how strongly the magic pushes through a resistant target's defences.")), /*#__PURE__*/React.createElement("p", null, "A few spells also need ", /*#__PURE__*/React.createElement("b", null, "requisites"), " (extra Arts). When they do, you use the lowest of the applicable Techniques and the lowest of the applicable Forms \u2014 the magic is only as strong as its weakest part."), /*#__PURE__*/React.createElement("h3", null, "The stress die \u2014 and botches"), /*#__PURE__*/React.createElement("p", null, "Casting uses a ", /*#__PURE__*/React.createElement("b", null, "stress die"), ": a ten-sided die where a roll of 1 \u201Cexplodes\u201D (you roll again and double the result, which can chain upward for a thrilling success), while a 0 is dangerous \u2014 it can mean a ", /*#__PURE__*/React.createElement("b", null, "botch"), ", where the magic goes wrong. The greater the danger, the more botch dice you risk. You don't have to track any of this by hand: the ", /*#__PURE__*/React.createElement("b", null, "Casting Chamber"), " rolls the stress die, handles the explosions and botch checks, and shows you the verdict."), /*#__PURE__*/React.createElement("h3", null, "Building a magus"), /*#__PURE__*/React.createElement("ul", null, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Characteristics"), " \u2014 eight inborn traits (Intelligence, Stamina, and so on), bought with a small pool of points."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Techniques & Forms (the Arts)"), " \u2014 the fifteen magical skills; higher scores mean stronger, more reliable spells."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "House"), " \u2014 the Hermetic tradition your magus was trained in, each with its own flavour and tricks."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Confidence"), " \u2014 a pool of self-belief you spend for a +3 in a crucial moment (magi start with 3)."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Magic aura"), " \u2014 the strength of magic where you usually cast; it adds straight to your Casting Totals.")), /*#__PURE__*/React.createElement("p", null, "Tap the ", /*#__PURE__*/React.createElement("b", null, "?"), " beside any heading in the character editor for a quick refresher on that piece."), /*#__PURE__*/React.createElement("h3", null, "Using this companion"), /*#__PURE__*/React.createElement("ol", null, /*#__PURE__*/React.createElement("li", null, "Open ", /*#__PURE__*/React.createElement("b", null, "Magi"), " and inscribe a character \u2014 set their Characteristics, Arts, House and the rest. They're saved to your browser automatically."), /*#__PURE__*/React.createElement("li", null, "Browse the ", /*#__PURE__*/React.createElement("b", null, "Grimoire"), " of 372 spells, filter by Technique or Form, and send any spell to the Casting Chamber."), /*#__PURE__*/React.createElement("li", null, "In the ", /*#__PURE__*/React.createElement("b", null, "Casting Chamber"), ", pick a magus, reshape the spell's words and Range/Duration/Target, watch the Level recompute, then roll.")), /*#__PURE__*/React.createElement("div", {
+  }, "Meet or beat the spell's ", /*#__PURE__*/React.createElement("b", null, "Level"), " and the spell works. The amount you beat it by is your", /*#__PURE__*/React.createElement("b", null, " Penetration"), " \u2014 how strongly the magic pushes through a resistant target's defences.")), /*#__PURE__*/React.createElement("p", null, "A few spells also need ", /*#__PURE__*/React.createElement("b", null, "requisites"), " (extra Arts). When they do, you use the lowest of the applicable Techniques and the lowest of the applicable Forms \u2014 the magic is only as strong as its weakest part."), /*#__PURE__*/React.createElement("h3", null, "The stress die \u2014 and botches"), /*#__PURE__*/React.createElement("p", null, "Casting uses a ", /*#__PURE__*/React.createElement("b", null, "stress die"), ": a ten-sided die where a roll of 1 \u201Cexplodes\u201D (you roll again and double the result, which can chain upward for a thrilling success), while a 0 is dangerous \u2014 it can mean a ", /*#__PURE__*/React.createElement("b", null, "botch"), ", where the magic goes wrong. The greater the danger, the more botch dice you risk. You don't have to track any of this by hand: the ", /*#__PURE__*/React.createElement("b", null, "Casting Chamber"), " rolls the stress die, handles the explosions and botch checks, and shows you the verdict."), /*#__PURE__*/React.createElement("h3", null, "Building a magus"), /*#__PURE__*/React.createElement("ul", null, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Characteristics"), " \u2014 eight inborn traits (Intelligence, Stamina, and so on), bought with a small pool of points."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Techniques & Forms (the Arts)"), " \u2014 the fifteen magical skills; higher scores mean stronger, more reliable spells."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "House"), " \u2014 the Hermetic tradition your magus was trained in, each with its own flavour and tricks."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Confidence"), " \u2014 a pool of self-belief you spend for a +3 in a crucial moment (magi start with 3)."), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, "Magic aura"), " \u2014 the strength of magic where you usually cast; it adds straight to your Casting Totals.")), /*#__PURE__*/React.createElement("p", null, "Tap the ", /*#__PURE__*/React.createElement("b", null, "?"), " beside any heading in the character editor for a quick refresher on that piece."), /*#__PURE__*/React.createElement("h3", null, "The eight Characteristics"), /*#__PURE__*/React.createElement("p", null, "Every character is defined by eight inborn traits, each rated from \u22123 to +3 (legendary heroes may reach \xB15). A trait's score is added to \u2014 or subtracted from \u2014 every roll that depends on it."), /*#__PURE__*/React.createElement("div", {
+    className: "am-deflist"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Intelligence"), /*#__PURE__*/React.createElement("span", null, "Reasoning and learning. Vital to magi: it drives Magic Theory, laboratory work and study.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Perception"), /*#__PURE__*/React.createElement("span", null, "Noticing things \u2014 awareness, searching, and reading people and situations.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Strength"), /*#__PURE__*/React.createElement("span", null, "Raw physical power: melee damage, lifting, and how much you can carry.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Stamina"), /*#__PURE__*/React.createElement("span", null, "Endurance and toughness: resisting wounds, fatigue and disease \u2014 and it is added to every spell's Casting Total.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Presence"), /*#__PURE__*/React.createElement("span", null, "Bearing and charisma: first impressions, leadership and force of personality.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Communication"), /*#__PURE__*/React.createElement("span", null, "Clarity of expression: teaching, writing books, bargaining, and some kinds of magic.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Dexterity"), /*#__PURE__*/React.createElement("span", null, "Coordination and finesse: weapon skill, crafts, and precise spell gestures.")), /*#__PURE__*/React.createElement("div", {
+    className: "am-def"
+  }, /*#__PURE__*/React.createElement("b", null, "Quickness"), /*#__PURE__*/React.createElement("span", null, "Speed and reflexes: initiative, dodging and fast reactions."))), /*#__PURE__*/React.createElement("h3", null, "Virtues & Flaws"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", null, "Virtues"), " are special advantages \u2014 extra powers, useful backgrounds, magical knacks \u2014 while", /*#__PURE__*/React.createElement("b", null, " Flaws"), " are drawbacks: handicaps, enemies, compulsions and story hooks. Together they make a character distinctive, and they must ", /*#__PURE__*/React.createElement("b", null, "balance"), ": you take Flaws worth as many points as the Virtues you claim. Each is ", /*#__PURE__*/React.createElement("b", null, "Major"), " (worth 3 points) or ", /*#__PURE__*/React.createElement("b", null, "Minor"), " (worth 1), and they come in kinds \u2014 Hermetic, Supernatural, Social Status and General. A starting magus may take up to 10 points of Virtues, balanced by up to 10 points of Flaws (The Gift and Hermetic Magus are free)."), /*#__PURE__*/React.createElement("div", {
+    className: "am-rules-cta"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://www.redcap.org/page/Ars_Magica_Reference_Document",
+    target: "_blank",
+    rel: "noreferrer"
+  }, "Browse all Virtues & Flaws \u2192"), /*#__PURE__*/React.createElement("span", {
+    className: "hint"
+  }, "The complete lists, with full descriptions, are in the reference document (Project Redcap).")), /*#__PURE__*/React.createElement("h3", null, "Using this companion"), /*#__PURE__*/React.createElement("ol", null, /*#__PURE__*/React.createElement("li", null, "Open ", /*#__PURE__*/React.createElement("b", null, "Magi"), " and inscribe a character \u2014 set their Characteristics, Arts, House and the rest. They're saved to your browser automatically."), /*#__PURE__*/React.createElement("li", null, "Browse the ", /*#__PURE__*/React.createElement("b", null, "Grimoire"), " of 402 spells, filter by Technique or Form, and send any spell to the Casting Chamber."), /*#__PURE__*/React.createElement("li", null, "In the ", /*#__PURE__*/React.createElement("b", null, "Casting Chamber"), ", pick a magus, reshape the spell's words and Range/Duration/Target, watch the Level recompute, then roll."), /*#__PURE__*/React.createElement("li", null, "Read up on the twelve ", /*#__PURE__*/React.createElement("b", null, "Houses"), " and find their seats on the ", /*#__PURE__*/React.createElement("b", null, "Map"), " of Mythic Europe.")), /*#__PURE__*/React.createElement("div", {
     className: "am-rules-cta"
   }, /*#__PURE__*/React.createElement("a", {
     href: "https://www.redcap.org/page/Ars_Magica_Reference_Document",
@@ -9857,7 +10189,7 @@ function App() {
     className: "am-rule"
   }), /*#__PURE__*/React.createElement("nav", {
     className: "am-nav"
-  }, [["learn", "How to Play"], ["magi", "Magi"], ["grimoire", "Grimoire"], ["casting", "Casting Chamber"]].map(([k, label]) => /*#__PURE__*/React.createElement("button", {
+  }, [["learn", "How to Play"], ["magi", "Magi"], ["grimoire", "Grimoire"], ["casting", "Casting Chamber"], ["houses", "Houses"], ["map", "Map"]].map(([k, label]) => /*#__PURE__*/React.createElement("button", {
     key: k,
     className: "am-tab" + (view === k ? " on" : ""),
     onClick: () => setView(k)
@@ -9874,7 +10206,9 @@ function App() {
     setSelectedId: setSelectedId,
     workSpell: workSpell,
     setWorkSpell: setWorkSpell
-  }), /*#__PURE__*/React.createElement("div", {
+  }), view === "houses" && /*#__PURE__*/React.createElement(HousesView, {
+    onSeeMap: () => setView("map")
+  }), view === "map" && /*#__PURE__*/React.createElement(MapView, null), /*#__PURE__*/React.createElement("div", {
     className: "am-foot"
   }, "Rules per Ars Magica 5th Edition (CC BY-SA 4.0, Project Redcap). Spells: the", " ", /*#__PURE__*/React.createElement("a", {
     href: "https://github.com/swdevlin/ars-magica-grimoire",
