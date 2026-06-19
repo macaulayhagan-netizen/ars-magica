@@ -8452,14 +8452,25 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 .am-house .hl{font-size:13px;color:var(--txt-soft);border-top:1px dashed var(--line-soft);padding-top:6px;}
 .am-house .hl b{color:var(--lapis);}
 
-/* world map */
-.am-map{height:540px;border-radius:6px;overflow:hidden;border:1px solid var(--line-soft);background:#dcd3bf;}
-.am-pin-wrap{background:transparent !important;border:0 !important;}
-.am-pin{display:block;width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
-  background:var(--gold);border:2px solid #5b4a1e;box-shadow:0 1px 3px rgba(0,0,0,.5);}
-.am-pop b{font-family:'Cormorant Garamond';font-size:15px;color:#241c14;}
-.am-pop .t{font-size:12px;color:#5b4e3a;margin-top:2px;}
-.am-pop .p{font-size:12px;color:#7d6c50;font-style:italic;margin-top:1px;}
+/* world map (image + overlaid markers) */
+.am-imap{position:relative;width:100%;margin:2px 0;}
+.am-imap-img{width:100%;display:block;border-radius:6px;border:1px solid var(--line-soft);
+  box-shadow:0 4px 16px rgba(0,0,0,.35);}
+.am-mk{position:absolute;transform:translate(-50%,-50%);background:none;border:none;padding:6px;margin:-6px;
+  cursor:pointer;line-height:0;z-index:2;}
+.am-mk-dot{display:block;width:14px;height:14px;border-radius:50%;background:var(--gold);
+  border:2px solid #4a3a14;box-shadow:0 1px 4px rgba(0,0,0,.7);transition:transform .12s;}
+.am-mk:hover{z-index:6;}
+.am-mk:hover .am-mk-dot{transform:scale(1.35);}
+.am-mk.on{z-index:9;}
+.am-mk.on .am-mk-dot{transform:scale(1.35);background:var(--gold-bright);}
+.am-mk-pop{position:absolute;left:50%;bottom:150%;transform:translateX(-50%);width:max-content;max-width:210px;
+  background:var(--vellum);border:1px solid var(--lapis);border-radius:5px;padding:7px 10px;text-align:left;
+  box-shadow:0 6px 18px rgba(0,0,0,.45);z-index:10;line-height:1.3;cursor:default;}
+.am-mk-pop.left{left:auto;right:50%;transform:translateX(0);}
+.am-mk-pop b{font-family:'Cormorant Garamond';font-weight:700;font-size:15px;color:var(--txt);}
+.am-mk-pop .t{font-size:12px;color:var(--lapis);margin-top:2px;}
+.am-mk-pop .p{font-size:12px;color:var(--txt-faint);font-style:italic;margin-top:1px;}
 
 .am-readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:1px;background:var(--line-soft);
   border:1px solid var(--line-soft);border-radius:4px;overflow:hidden;margin-top:14px;}
@@ -9814,8 +9825,8 @@ const HOUSE_DATA = [{
   domus: "Durenmar",
   tribunal: "Rhine Tribunal",
   place: "the Black Forest, Germany",
-  lat: 48.0,
-  lng: 8.2
+  mx: 65,
+  my: 46
 }, {
   house: "Guernicus",
   cat: "True Lineage",
@@ -9824,8 +9835,8 @@ const HOUSE_DATA = [{
   domus: "Magvillus",
   tribunal: "Roman Tribunal",
   place: "central Italy",
-  lat: 41.9,
-  lng: 12.7
+  mx: 83,
+  my: 64
 }, {
   house: "Mercere",
   cat: "True Lineage",
@@ -9834,8 +9845,8 @@ const HOUSE_DATA = [{
   domus: "Harco",
   tribunal: "Roman Tribunal",
   place: "the Italian peninsula",
-  lat: 43.4,
-  lng: 12.1
+  mx: 79,
+  my: 60
 }, {
   house: "Tremere",
   cat: "True Lineage",
@@ -9844,8 +9855,9 @@ const HOUSE_DATA = [{
   domus: "Coeris",
   tribunal: "Transylvanian Tribunal",
   place: "Transylvania",
-  lat: 46.6,
-  lng: 24.5
+  mx: 96.5,
+  my: 49,
+  offmap: true
 }, {
   house: "Bjornaer",
   cat: "Mystery Cult",
@@ -9854,8 +9866,8 @@ const HOUSE_DATA = [{
   domus: "Crintera",
   tribunal: "Rhine Tribunal",
   place: "the isle of Rügen, on the Baltic coast",
-  lat: 54.4,
-  lng: 13.4
+  mx: 80,
+  my: 21
 }, {
   house: "Criamon",
   cat: "Mystery Cult",
@@ -9864,8 +9876,8 @@ const HOUSE_DATA = [{
   domus: "The Cave of Twisting Shadows",
   tribunal: "Greater Alps Tribunal",
   place: "the Alps",
-  lat: 46.4,
-  lng: 9.2
+  mx: 69,
+  my: 56
 }, {
   house: "Merinita",
   cat: "Mystery Cult",
@@ -9874,8 +9886,8 @@ const HOUSE_DATA = [{
   domus: "Irencillia",
   tribunal: "Rhine Tribunal",
   place: "faerie woods of the south-east Rhine",
-  lat: 48.1,
-  lng: 8.6
+  mx: 63,
+  my: 48
 }, {
   house: "Verditius",
   cat: "Mystery Cult",
@@ -9884,8 +9896,8 @@ const HOUSE_DATA = [{
   domus: "Verdi",
   tribunal: "Roman Tribunal",
   place: "the island of Sardinia",
-  lat: 40.1,
-  lng: 9.1
+  mx: 70,
+  my: 72
 }, {
   house: "Flambeau",
   cat: "Societas",
@@ -9894,8 +9906,8 @@ const HOUSE_DATA = [{
   domus: "Castra Solis",
   tribunal: "Provençal Tribunal",
   place: "the Pyrenees",
-  lat: 42.7,
-  lng: 1.8
+  mx: 43,
+  my: 66
 }, {
   house: "Jerbiton",
   cat: "Societas",
@@ -9904,8 +9916,8 @@ const HOUSE_DATA = [{
   domus: "Valnastium",
   tribunal: "Greater Alps Tribunal",
   place: "the Alps",
-  lat: 46.8,
-  lng: 8.0
+  mx: 65.5,
+  my: 52.5
 }, {
   house: "Tytalus",
   cat: "Societas",
@@ -9914,8 +9926,8 @@ const HOUSE_DATA = [{
   domus: "Fudarus",
   tribunal: "Normandy Tribunal",
   place: "the isle of Ushant, off Brittany",
-  lat: 48.46,
-  lng: -5.1
+  mx: 25.5,
+  my: 51.5
 }, {
   house: "Ex Miscellanea",
   cat: "Societas",
@@ -9924,8 +9936,8 @@ const HOUSE_DATA = [{
   domus: "Cad Gadu",
   tribunal: "Stonehenge Tribunal",
   place: "the regios of south Wales",
-  lat: 51.8,
-  lng: -3.7
+  mx: 32.5,
+  my: 34
 }];
 const HOUSE_CATS = [["True Lineage", "True Lineages", "Joined only by being trained within the lineage — descent from the Founder is everything."], ["Mystery Cult", "Mystery Cults", "Joined through initiation into secret inner teachings and supernatural Mysteries."], ["Societas", "Societates", "A society joined by choice and shared outlook rather than blood or secret rite."]];
 function HousesView({
@@ -9977,70 +9989,11 @@ function HousesView({
   }, "Fuller detail on every House and its lineage at Project Redcap."))));
 }
 
-// Leaflet is loaded on demand from a CDN; the map degrades to a list if it can't load.
-let _leafletPromise = null;
-function loadLeaflet() {
-  if (typeof window === "undefined") return Promise.reject(new Error("no window"));
-  if (window.L) return Promise.resolve(window.L);
-  if (_leafletPromise) return _leafletPromise;
-  _leafletPromise = new Promise((resolve, reject) => {
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(css);
-    const js = document.createElement("script");
-    js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    js.async = true;
-    js.onload = () => resolve(window.L);
-    js.onerror = () => reject(new Error("leaflet failed to load"));
-    document.head.appendChild(js);
-  });
-  return _leafletPromise;
-}
+// The Mythic Europe map image (Atlas Games). Markers are positioned over it by percentage.
+const MAP_IMG = "https://atlas-games.com/atlas-cms/resources/mythic-europe-map.jpg";
 function MapView() {
-  const elRef = useRef(null);
-  const mapRef = useRef(null);
-  const [status, setStatus] = useState("loading");
-  useEffect(() => {
-    let cancelled = false;
-    loadLeaflet().then(L => {
-      if (cancelled || !elRef.current || mapRef.current) return;
-      const map = L.map(elRef.current, {
-        scrollWheelZoom: false
-      }).setView([46.5, 10], 4);
-      mapRef.current = map;
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        minZoom: 3,
-        maxZoom: 9,
-        attribution: "© OpenStreetMap contributors"
-      }).addTo(map);
-      const icon = L.divIcon({
-        className: "am-pin-wrap",
-        html: '<span class="am-pin"></span>',
-        iconSize: [18, 18],
-        iconAnchor: [9, 16],
-        popupAnchor: [0, -15]
-      });
-      HOUSE_DATA.forEach(h => {
-        L.marker([h.lat, h.lng], {
-          icon
-        }).addTo(map).bindPopup(`<div class="am-pop"><b>${h.domus}</b><div class="t">House ${h.house} · ${h.tribunal}</div><div class="p">${h.place}</div></div>`);
-      });
-      setTimeout(() => {
-        if (!cancelled && mapRef.current) mapRef.current.invalidateSize();
-      }, 250);
-      if (!cancelled) setStatus("ready");
-    }).catch(() => {
-      if (!cancelled) setStatus("error");
-    });
-    return () => {
-      cancelled = true;
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, []);
+  const [active, setActive] = useState(null);
+  const [imgError, setImgError] = useState(false);
   return /*#__PURE__*/React.createElement("div", {
     className: "am-panel"
   }, /*#__PURE__*/React.createElement("div", {
@@ -10051,15 +10004,41 @@ function MapView() {
     className: "am-h"
   }, "The World Map"), /*#__PURE__*/React.createElement("p", {
     className: "am-lead"
-  }, "Mythic Europe is the real medieval world of around 1220, seen through a lens of magic. The markers show the ", /*#__PURE__*/React.createElement("i", null, "domus magna"), " of each of the twelve Houses; tap one for its tale. Locations are placed approximately."), status !== "error" && /*#__PURE__*/React.createElement("div", {
-    className: "am-map",
-    ref: elRef
-  }), status === "error" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, "Mythic Europe in 1220 \u2014 the medieval world seen through a lens of magic. The gold markers show the", /*#__PURE__*/React.createElement("i", null, " domus magna"), " of each of the twelve Houses; tap one for its tale. Positions are approximate."), !imgError ? /*#__PURE__*/React.createElement("div", {
+    className: "am-imap",
+    onClick: () => setActive(null)
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "am-imap-img",
+    src: MAP_IMG,
+    alt: "Map of Mythic Europe, 1220 A.D.",
+    onError: () => setImgError(true)
+  }), HOUSE_DATA.map((h, i) => /*#__PURE__*/React.createElement("button", {
+    key: h.house,
+    className: "am-mk" + (active === i ? " on" : ""),
+    style: {
+      left: h.mx + "%",
+      top: h.my + "%"
+    },
+    title: h.domus,
+    onClick: e => {
+      e.stopPropagation();
+      setActive(active === i ? null : i);
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "am-mk-dot"
+  }), active === i && /*#__PURE__*/React.createElement("div", {
+    className: "am-mk-pop" + (h.mx > 80 ? " left" : ""),
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("b", null, h.domus), /*#__PURE__*/React.createElement("div", {
+    className: "t"
+  }, "House ", h.house, " \xB7 ", h.tribunal), /*#__PURE__*/React.createElement("div", {
+    className: "p"
+  }, h.offmap ? h.place + " — east, beyond this map's edge" : h.place))))) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "am-faint",
     style: {
       marginTop: 0
     }
-  }, "The interactive map needs an internet connection to load. Here are the House seats and where they lie:"), /*#__PURE__*/React.createElement("div", {
+  }, "The map image could not be loaded. Here are the House seats and where they lie:"), /*#__PURE__*/React.createElement("div", {
     className: "am-house-grid"
   }, HOUSE_DATA.map(h => /*#__PURE__*/React.createElement("div", {
     className: "am-house",
@@ -10080,7 +10059,7 @@ function MapView() {
       fontSize: 13,
       marginTop: 10
     }
-  }, "Map tiles \xA9 OpenStreetMap contributors. The Order also gathers in thirteen Tribunals across Mythic Europe \u2014 among them Rome, the Rhine, the Greater Alps, Normandy, Proven\xE7al, Iberia, Stonehenge, Loch Leglean, Hibernia, Novgorod, the Levant, Thebes and Transylvania.")));
+  }, "Map of Mythic Europe \xA9 Atlas Games. The Order gathers in thirteen Tribunals across Mythic Europe \u2014 among them Rome, the Rhine, the Greater Alps, Normandy, Proven\xE7al, Iberia, Stonehenge, Loch Leglean, Hibernia, Novgorod, the Levant, Thebes and Transylvania.")));
 }
 
 /* ============================================================ */
