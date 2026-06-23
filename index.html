@@ -8219,6 +8219,7 @@ function blankMagus() {
     arts: Object.fromEntries([...TECH_NAMES, ...FORM_NAMES].map(a => [a, 0])),
     aura: 0,
     confidence: 3,
+    virtuesFlaws: [],
     notes: ""
   };
 }
@@ -8452,6 +8453,20 @@ h2.am-h{font-family:'Cormorant Garamond',serif;color:var(--rubric);font-weight:7
 .am-house .hl{font-size:13px;color:var(--txt-soft);border-top:1px dashed var(--line-soft);padding-top:6px;}
 .am-house .hl b{color:var(--lapis);}
 
+/* virtues & flaws (editor) */
+.am-vf-empty{font-size:13.5px;color:var(--txt-faint);font-style:italic;padding:8px 0 2px;}
+.am-vf-row{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.42);
+  border:1px solid var(--line-soft);border-left:4px solid var(--lapis);border-radius:4px;
+  padding:9px 11px;margin-bottom:8px;}
+.am-vf-row.flaw{border-left-color:var(--rubric);}
+.am-vf-row .bd{flex:1;min-width:0;}
+.am-vf-row .nm{font-family:'Cormorant Garamond';font-weight:700;font-size:16px;color:var(--txt);line-height:1.15;}
+.am-vf-row .meta{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--txt-faint);margin:1px 0 4px;}
+.am-vf-row .ds{font-size:13px;line-height:1.5;color:var(--txt-soft);}
+.am-vf-row .rm{flex-shrink:0;background:none;border:1px solid var(--line-soft);border-radius:4px;
+  color:var(--rubric);cursor:pointer;font-size:17px;line-height:1;padding:2px 9px;}
+.am-vf-row .rm:hover{background:rgba(124,33,20,.1);}
+
 /* world map (image + overlaid markers) */
 .am-imap{position:relative;width:100%;margin:2px 0;}
 .am-imap-img{width:100%;display:block;border-radius:6px;border:1px solid var(--line-soft);
@@ -8647,6 +8662,23 @@ function MagusEditor({
       [k]: v
     }
   }));
+  const vf = m.virtuesFlaws || [];
+  const vPts = vf.reduce((s, n) => {
+    const e = VF_BY_NAME[n];
+    return s + (e && e.k === "Virtue" ? vfPoints(e.s) : 0);
+  }, 0);
+  const fPts = vf.reduce((s, n) => {
+    const e = VF_BY_NAME[n];
+    return s + (e && e.k === "Flaw" ? vfPoints(e.s) : 0);
+  }, 0);
+  const addVF = n => {
+    if (n && !vf.includes(n)) set({
+      virtuesFlaws: [...vf, n]
+    });
+  };
+  const removeVF = n => set({
+    virtuesFlaws: vf.filter(x => x !== n)
+  });
   const isMagus = m.kind === "Magus";
   return /*#__PURE__*/React.createElement("div", {
     className: "am-panel am-modal"
@@ -8859,6 +8891,87 @@ function MagusEditor({
     })
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
+      marginTop: 22
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "am-eyebrow"
+  }, "Virtues & Flaws"), /*#__PURE__*/React.createElement(InfoTip, {
+    title: "Virtues & Flaws"
+  }, "Virtues are advantages; Flaws are drawbacks or story hooks, and the two must balance \u2014 you take as many points of Flaws as Virtues. Major is worth 3 points, Minor 1, and some are Free. A starting magus or companion may take up to 10 points of each (and no more than 5 Minor Flaws); a grog up to 3 points, with no Major or Hermetic ones. Every character takes one Social Status, at most one Story Flaw, and at most one Major Personality Flaw. A magus must also take The Gift and Hermetic Magus (both Free) and gains one free Minor Virtue from their House.")), /*#__PURE__*/React.createElement("span", {
+    className: "am-faint",
+    style: {
+      fontSize: 14
+    }
+  }, "Virtues ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "var(--lapis)"
+    }
+  }, vPts), " \xB7 Flaws ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "var(--rubric)"
+    }
+  }, fPts))), /*#__PURE__*/React.createElement("select", {
+    className: "am-select",
+    style: {
+      marginTop: 8
+    },
+    value: "",
+    onChange: e => {
+      addVF(e.target.value);
+      e.target.value = "";
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "+ Add a Virtue or Flaw\u2026"), VF_ORDER.map(([k, c, s]) => {
+    const items = VF.filter(v => v.k === k && v.c === c && v.s === s);
+    if (!items.length) return null;
+    return /*#__PURE__*/React.createElement("optgroup", {
+      key: k + c + s,
+      label: `${k} · ${c} · ${s}`
+    }, items.map(v => /*#__PURE__*/React.createElement("option", {
+      key: v.n,
+      value: v.n,
+      disabled: vf.includes(v.n)
+    }, v.n)));
+  })), vf.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "am-vf-empty"
+  }, "No Virtues or Flaws chosen yet \u2014 add some from the list above.") : /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, vf.map(n => {
+    const e = VF_BY_NAME[n];
+    if (!e) return null;
+    const pts = vfPoints(e.s);
+    return /*#__PURE__*/React.createElement("div", {
+      key: n,
+      className: "am-vf-row" + (e.k === "Flaw" ? " flaw" : "")
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bd"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "nm"
+    }, e.n), /*#__PURE__*/React.createElement("div", {
+      className: "meta"
+    }, e.k, " \xB7 ", e.c, " \xB7 ", e.s, e.s !== "Free" ? ` · ${pts} pt${pts > 1 ? "s" : ""}` : ""), /*#__PURE__*/React.createElement("div", {
+      className: "ds"
+    }, e.d)), /*#__PURE__*/React.createElement("button", {
+      className: "rm",
+      title: "Remove",
+      onClick: () => removeVF(n)
+    }, "\xD7"));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
       marginTop: 16
     }
   }, /*#__PURE__*/React.createElement("label", {
@@ -8867,7 +8980,7 @@ function MagusEditor({
     className: "am-area",
     rows: 2,
     value: m.notes,
-    placeholder: "Virtues, flaws, sigil, personality\u2026",
+    placeholder: "Sigil, personality, history\u2026",
     onChange: e => set({
       notes: e.target.value
     })
@@ -9817,6 +9930,3748 @@ function CastingView({
 /* ============================================================ */
 /*                      HOUSES & THE MAP                        */
 /* ============================================================ */
+const VF = [{
+  "n": "Diedne Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your druidic lineage makes you a master of spontaneous magic: non-fatiguing spontaneous spells divide by 2 instead of 5. Tied to the disgraced House Diedne, so usually kept secret."
+}, {
+  "n": "Elemental Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You treat the four elemental Forms (Aquam, Auram, Ignem, Terram) as one connected whole, so study or experience in one also advances the others. You ignore the usual requisite costs between them."
+}, {
+  "n": "Faerie-Raised Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Raised among faeries, you invent and learn Formulaic spells unusually fast, almost as if they were inherent powers gained by observation."
+}, {
+  "n": "Flawless Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You automatically master every spell you know, each starting at Spell Mastery 1 with a special ability of your choice, and you gain extra mastery experience."
+}, {
+  "n": "Flexible Formulaic Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You can shift a Formulaic spell's Range, Duration, or Target by up to one step while still casting it as reliable known magic."
+}, {
+  "n": "Gentle Gift",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your Gift no longer unsettles people or animals, so you avoid all the usual social penalties magi suffer when dealing with them."
+}, {
+  "n": "Leper Magus",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "A Tytalus mystic legacy carried through leprosy grants you hidden benefits. Requires the Leprosy Flaw and House Tytalus training."
+}, {
+  "n": "Life-Linked Spontaneous Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You fuel spontaneous magic with your own vitality, declaring the effect first and paying Fatigue (and risking wounds) to reach far above your normal output."
+}, {
+  "n": "Major Magical Focus",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Within a broad specialty (weather, the dead, emotions) you add the lower of your two Arts again to all Casting and Lab Totals — a large, defining boost."
+}, {
+  "n": "Mercurian Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Heir to the Roman priests of Mercury, you excel at Ritual magic and at casting in concert with others, though your spontaneous magic is weaker."
+}, {
+  "n": "Mythic Blood",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You descend from a legendary wizard or supernatural being, gaining a lasting minor magical power, a related Minor Magical Focus, and one effect needing no words or gestures."
+}, {
+  "n": "Adept Laboratory Student",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "+6 to Lab Totals when working from another magus's lab texts, including when reinventing their spells."
+}, {
+  "n": "Affinity with Art",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "One Hermetic Art advances 50% faster (and its starting experience is boosted by half), and you may push it past normal limits."
+}, {
+  "n": "Atlantean Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You know several useful extensions to Hermetic magic preserved from the sorcery of exiled Atlanteans."
+}, {
+  "n": "Boosted Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Spend a pawn of vis while casting a Formulaic spell to raise its Range, Duration, Target, or size by one magnitude; repeatable on the same spell."
+}, {
+  "n": "Cautious Sorcerer",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You roll 3 fewer botch dice when casting any spell and when working in the laboratory."
+}, {
+  "n": "Clan Ilfetu",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "A Bjornaer of Clan Ilfetu, you received extra training in the House's secret rituals."
+}, {
+  "n": "Cyclic Magic (positive)",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your magic is attuned to a natural cycle (solar, lunar, seasonal) and grows stronger at set times: +3 to all Casting Totals then."
+}, {
+  "n": "Deft Form",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "With one Form you take no penalty for casting without standard words or gestures, even while in an inhuman shape."
+}, {
+  "n": "Enduring Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your spells linger: the storyguide secretly rolls a simple die and multiplies the spell's duration by it (Momentary, Concentration, and Ring spells excepted)."
+}, {
+  "n": "Exotic Casting",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You cast Hermetic spells by non-standard methods, so your words and gestures differ from the norm and confuse magi trying to follow your work."
+}, {
+  "n": "Extractor of (Form) Vis",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You can draw one Form's vis from a magic aura whose features embody that Form, such as Aquam by a lake or Corpus at a grave."
+}, {
+  "n": "Faerie Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You are initiated into Faerie Magic and House Merinita, starting with the Faerie Magic Ability at 1 (free for all Merinita magi)."
+}, {
+  "n": "Fast Caster",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "+3 Initiative to cast spells in combat, and +3 to your fast-casting speed rolls."
+}, {
+  "n": "Free Study",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "+3 to Source Quality whenever you study an Art from raw vis."
+}, {
+  "n": "Gorgiastic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Descended from magi who left House Criamon, you may learn Enigmatic Wisdom and Criamon Lore."
+}, {
+  "n": "Guest of House Criamon",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You count politically as a Criamon magus but are built using any other House's rules, membership being offered as a formality."
+}, {
+  "n": "Harnessed Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You can cancel any of your own ongoing spells just by concentrating, even effects invested in items you made."
+}, {
+  "n": "Heartbeast",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You are initiated into the Bjornaer Mystery and have a Heartbeast (true animal form), starting with Heartbeast 1 (free for all Bjornaer magi)."
+}, {
+  "n": "Hermetic Prestige",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Other magi look up to you regardless of merit, giving you a Reputation of 4 within the Order."
+}, {
+  "n": "Imbued with the Spirit of (Form)",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Having absorbed an elemental's power, you gain benefits tied to one Form, but beings with Might in that Form can sense your nature nearby."
+}, {
+  "n": "Inventive Genius",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "+3 to Lab Totals when inventing without a text or teacher, and +6 when you experiment."
+}, {
+  "n": "Life Boost",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Spend extra Fatigue levels while casting a Formulaic or Ritual spell for +5 to the total each, ideal for boosting Penetration."
+}, {
+  "n": "Magical Memory",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You needn't keep lab texts of your own creations; your memory lets you reproduce them as though you had the text."
+}, {
+  "n": "Mastered Spells",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You begin with 50 experience points to spend mastering spells you already know."
+}, {
+  "n": "Masterpiece",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You were allowed to keep the lesser enchanted item you made to pass your Gauntlet, so you start play already owning it."
+}, {
+  "n": "Method Caster",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "+3 to the Casting Total of every Formulaic and Ritual spell you cast."
+}, {
+  "n": "Minor Magical Focus",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Within a narrow field (e.g. healing, self-transformation) you add the lower of your two Arts again to Casting and Lab Totals."
+}, {
+  "n": "Mystical Choreography",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your ceremonial magic is much faster, requiring only five minutes per magnitude."
+}, {
+  "n": "Performance Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You disguise spellcasting inside a mundane performance you excel at, using that Ability in place of voice and gestures."
+}, {
+  "n": "Personal Vis Source",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You alone can gather a small yearly supply of raw vis, roughly a tenth of the covenant's expected annual haul."
+}, {
+  "n": "Potent Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Within a narrow field you add a bonus (often +3 or more) to Casting and Lab Totals; it stacks with a Focus, and you may have several such fields."
+}, {
+  "n": "Puissant Art",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "+3 to one Art whenever you use it, though not when learning, teaching, or writing about it. May be taken twice."
+}, {
+  "n": "Quiet Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You cast at no penalty using only a soft voice, or at just -5 with no voice at all. Take it twice to remove even that penalty."
+}, {
+  "n": "Secondary Insight",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Whenever you study a Technique, you also gain 1 experience point in each of any four Forms you choose."
+}, {
+  "n": "Side Effect",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your spells carry an extra, generally useful effect whose intensity grows with the spell's level."
+}, {
+  "n": "Skilled Parens",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your master trained you well: you begin with an extra 60 experience points and 30 levels of spells from apprenticeship."
+}, {
+  "n": "Special Circumstances",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "In one uncommon situation (during a storm, while touching the target) you gain +3 to Casting Totals and Magic Resistance."
+}, {
+  "n": "Spell Improvisation",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "When casting spontaneously, add the magnitude of a known, similar Formulaic spell as a bonus to your total."
+}, {
+  "n": "Study Bonus",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Studying an Art in the presence of its Form or Technique gives +2 to vis study rolls or +2 to a text's Quality."
+}, {
+  "n": "Subtle Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You cast without gestures at no penalty; exaggerated gestures still grant their usual bonus."
+}, {
+  "n": "Tethered Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You can pass control of your non-Ritual spells to another person for the spell's duration, as if they were the caster."
+}, {
+  "n": "The Enigma",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You are initiated into the Criamon Mystery, starting with Enigmatic Wisdom at 1 (free for all Criamon magi)."
+}, {
+  "n": "Verditius Magic",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You are initiated into Verditius Magic and House Verditius, gaining its enchanting Mysteries (free for all Verditius magi)."
+}, {
+  "n": "Withstand Casting",
+  "k": "Virtue",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "When casting fatigues you, you lose 1 fewer Fatigue level than normal (minimum 1); spells that wouldn't fatigue you still don't."
+}, {
+  "n": "Bee King",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Descended from bee faeries, you can command and speak with bees and gain related faerie-blood benefits."
+}, {
+  "n": "Blood of the Nephilim",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Angelic ancestry grants you a Divine Might score and access to supernatural powers from that heritage."
+}, {
+  "n": "Command Animals",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can mentally command all mundane animals of one species (Command Animals 1)."
+}, {
+  "n": "Corpse Magic",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can work minor magic on and through corpses (Corpse Magic 1)."
+}, {
+  "n": "Curse-Throwing",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can cure a disease or lift a curse by transferring it onto another person (Curse-Throwing 1)."
+}, {
+  "n": "Demonic Blood",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "One parent was a demon, making you an Infernal being with Infernal Might (Corpus) 5, which grants you Magic Resistance."
+}, {
+  "n": "Embitterment",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can turn a person hostile toward a target of your choosing (Embitterment 1)."
+}, {
+  "n": "Entrancement",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "By locking eyes and giving a spoken command you can control another's will (Entrancement 1)."
+}, {
+  "n": "Focus Power",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You have a flexible supernatural power with a narrow range of effects, used much like spontaneous casting within one theme."
+}, {
+  "n": "Greater Benediction",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "A supernatural blessing grants you a benefit equal in scope to other Major Virtues, defined with the storyguide."
+}, {
+  "n": "Greater Immunity",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You are completely immune to one common and deadly hazard, such as fire or iron weapons (aging excepted)."
+}, {
+  "n": "Greater Power",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You wield a single at-will supernatural power roughly equal to a Formulaic spell of level 50 or lower."
+}, {
+  "n": "Greater Purifying Touch",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "With a touch and one Fatigue level you can cure a single serious, normally unrecoverable disease."
+}, {
+  "n": "Hex",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can curse enemies with dire predictions that tend to come true (Hex 1), usually an Infernal power."
+}, {
+  "n": "Immune to Disease",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Marked as a powerful demon's property, you can never be harmed by any disease."
+}, {
+  "n": "Induction",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can make others perceive things that are not there (Induction 1)."
+}, {
+  "n": "Ritual Power",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You have one at-will supernatural power equal to a Ritual spell of level 25 or lower."
+}, {
+  "n": "Sense Passions",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can read the hearts of others, sensing their fears, weaknesses, and dark thoughts (Sense Passions 1)."
+}, {
+  "n": "Shapeshifter",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can transform into one or more mundane animal forms (Shapeshifter 1)."
+}, {
+  "n": "Skinchanger (Dove)",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "A stronger Skinchanger: you can turn into a dove at will, without needing an animal-skin item."
+}, {
+  "n": "Spiritual Pact",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You hold a pact with a powerful Magic spirit, gaining access to its power in return for loyal service."
+}, {
+  "n": "Strong Faerie Blood",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Potent faerie ancestry grants several faerie abilities, slowed aging, and related benefits."
+}, {
+  "n": "Summon Animals",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can summon animals to your side (Summon Animals 1)."
+}, {
+  "n": "Supernatural Beauty",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Your mystic beauty calls heroism, folk magic, and royal power to your defense when you are threatened."
+}, {
+  "n": "Whistle Up The Wind",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You can raise winds simply by whistling (Whistle Up The Wind 1)."
+}, {
+  "n": "(Land) Regio Network",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can travel an extensive network of regiones tied to one environment, such as lakes, the sky, or caves."
+}, {
+  "n": "Amorphous",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can take on any human form, provided it is not the recognizable likeness of a real person."
+}, {
+  "n": "Animal Ken",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can converse with animals as though they were people (Animal Ken 1)."
+}, {
+  "n": "Crafter's Healing",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can magically heal wounds by touching them with the tools of your trade."
+}, {
+  "n": "Demonic Might",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Requires Demonic Blood; your Infernal Might rises by 2 and your corpse yields Corpus vis on death."
+}, {
+  "n": "Demonic Powers",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Requires Demonic Blood; you gain an extra 20 levels of Infernal powers."
+}, {
+  "n": "Dowsing",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can find nearby things using a dowsing rod and intuition (Dowsing 1)."
+}, {
+  "n": "Dust Devil",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "A Skinchanger variant: you can become a Size +1 dust devil at will and steer its movement."
+}, {
+  "n": "Enchanting (Ability)",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Through one art form (music, dance, storytelling, craft) you can magically stir emotions and beliefs in others."
+}, {
+  "n": "Eye of Hephaestus",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "By touch you judge a crafted item's quality, instantly sense any flaw, and may tell if it is magical."
+}, {
+  "n": "Fabric Ripper",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can supernaturally tear apart any item made from plant or animal fibers."
+}, {
+  "n": "Faerie Blood",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Distant faerie ancestry gives you intuitive insight into the fae and minor related benefits."
+}, {
+  "n": "Familiarity with the Fae",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "+2 to all social interaction rolls with faeries, thanks to your natural grasp of their ways."
+}, {
+  "n": "Feather Messenger",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "While in bird form you can send messages on the wind; available only to characters who can become birds."
+}, {
+  "n": "Folk Magic",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can perform very minor magical tricks drawn from scraps of folk lore."
+}, {
+  "n": "Font of Knowledge",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can supernaturally recall information you never actually learned (Font of Knowledge 1)."
+}, {
+  "n": "Frightful Presence",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can contort your face into a vision of terror or radiate overwhelming awe to unsettle onlookers."
+}, {
+  "n": "Gender Shift",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Each midnight you may switch between consistent male and female forms that resemble blood kin."
+}, {
+  "n": "Homing Instinct",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You always know the route to a number of fixed locations equal to your Intelligence (minimum 1)."
+}, {
+  "n": "Immunity to Cold",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Ordinary cold neither harms nor discomforts you, though magically created cold still does."
+}, {
+  "n": "Infernal Heirloom",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You inherited a working magic item made by a demon and may use it without dealing with that demon."
+}, {
+  "n": "Kassalan Exorcism",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can perform minor exorcisms learned from the Mortuary Society of Kassala."
+}, {
+  "n": "Leather Ripper",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can supernaturally destroy leather objects, causing strapped armor to fall apart."
+}, {
+  "n": "Lesser Benediction",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "A supernatural blessing equal in scope to other Minor Virtues, defined with the storyguide."
+}, {
+  "n": "Lesser Immunity",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You are immune to one hazard that is rare, not deadly, or both."
+}, {
+  "n": "Lesser Power",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You have one or more at-will supernatural powers totaling 25 levels or less of effect."
+}, {
+  "n": "Lesser Purifying Touch",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "With a touch and one Fatigue level you can cure a single minor or commonly survivable illness."
+}, {
+  "n": "Magic Sensitivity",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can often sense magic, but it leaves you exposed: subtract your score from your Magic Resistance."
+}, {
+  "n": "Magical Blood",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Exposure to the Magic realm gave your true form special supernatural properties."
+}, {
+  "n": "Maker of Textured Vessels",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can press mystical patterns into pottery before firing, with one shape per level of Craft: Potter."
+}, {
+  "n": "Maker of Water Vessels",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Drinking from your magical pottery lets someone swap an Ability for your Craft: Potter score."
+}, {
+  "n": "Master of (Form) Creatures",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can tame unintelligent beings whose Might matches one Form; may be taken once for each Form."
+}, {
+  "n": "Muse",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can grant Free Expression to another character, or double the Free Expression an artist already has."
+}, {
+  "n": "Persona",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can adopt one or more flawless disguises, altering both appearance and mannerisms (Persona 1)."
+}, {
+  "n": "Personal Power",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You have one at-will supernatural power equal to a Formulaic spell of level 25 or lower."
+}, {
+  "n": "Premonitions",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You sense when something is wrong or about to go wrong (Premonitions 1)."
+}, {
+  "n": "Ripper",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "By spending a Fatigue level you can shred one piece of cloth or disembowel one animal at Sight range, wordlessly."
+}, {
+  "n": "Second Sight",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can see through illusions, invisibility, and into spirits and regio boundaries (Second Sight 1)."
+}, {
+  "n": "See in Darkness",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You see in complete darkness, though no farther than you would by normal daylight."
+}, {
+  "n": "Sense Holiness and Unholiness",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can feel the presence of good and evil around you (Sense Holiness and Unholiness 1)."
+}, {
+  "n": "Skinchanger",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "While holding a special animal-skin item, you can transform into that animal."
+}, {
+  "n": "Strong Angelic Heritage",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Purer angelic blood grants you a Divine Might score and powers; requires Blood of the Nephilim."
+}, {
+  "n": "Unaging",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You no longer age: aging points build only toward Decrepitude and never lower your Characteristics."
+}, {
+  "n": "Unbound Tongue",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "In any non-human form you can still speak your languages, and as a magus may still cast by voice."
+}, {
+  "n": "Variable Power",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "One of your supernatural powers grows stronger over time, scaling with age, Might, Warping, or an Ability."
+}, {
+  "n": "Voice of the (Land)",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can speak with creatures native to one environment, who rarely treat you as a threat or as prey."
+}, {
+  "n": "Wilderness Sense",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You are mystically attuned to the ways of the wild (Wilderness Sense 1)."
+}, {
+  "n": "Wisdom from Ignorance",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "A Sufi insight tied to calligraphy and the aesthetics of the enigma grants you unusual understanding."
+}, {
+  "n": "Commanding Aura",
+  "k": "Virtue",
+  "c": "Supernatural",
+  "s": "Free",
+  "d": "A divine gift of Church office: your authority carries supernatural weight, usually paired with Senior Clergy."
+}, {
+  "n": "Death Prophecy",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "A condition has been set on your death, and until it is met you cannot die, though you can still be badly hurt."
+}, {
+  "n": "Ghostly Warder",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "A caring ghost watches over you, visible and audible only to you and to those with Second Sight."
+}, {
+  "n": "Giant Blood",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "Giant ancestry makes you huge and powerful, with Size +1 (or more) and bonuses to Strength and Stamina."
+}, {
+  "n": "Guardian Angel",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "A divine watcher gives you spiritual and practical guidance and may step in to protect you."
+}, {
+  "n": "License of Absence",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "As a priest you are excused from some clerical duties, freeing time for study or adventure."
+}, {
+  "n": "Magical Warder",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "A magical being accompanies you, watching over you and keeping you from harm."
+}, {
+  "n": "Powerful Relic",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "You own a potent holy relic with True Faith 3 and one agreed-upon supernatural power."
+}, {
+  "n": "True Faith",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "Your devout faith gives you a True Faith score of 1 (which can grow), shielding and empowering you against evil."
+}, {
+  "n": "Ways of the (Land)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "You are deeply at home in one type of terrain, gaining substantial bonuses to most actions taken there."
+}, {
+  "n": "Wealthy",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Major",
+  "d": "You are rich for your class and need not work, leaving three seasons each year free for study or adventuring."
+}, {
+  "n": "Academic Concentration (Subject)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to Artes Liberales for one of its seven subjects, your area of concentration."
+}, {
+  "n": "Affinity with Ability",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "One Ability advances 50% faster (and its starting experience is boosted by half). Repeatable for different Abilities."
+}, {
+  "n": "All According to Plan",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Once per session you may reroll a botch die by describing the contingency you had prepared."
+}, {
+  "n": "Alluring to (Beings)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "One class of beings (animals, faeries, or magic beings) finds you especially attractive and well-disposed."
+}, {
+  "n": "Apt Student",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+5 to Source Quality whenever you are taught or trained by another."
+}, {
+  "n": "Aptitude for (Sin)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "A demon-granted knack lets you commit one particular kind of sin more effectively."
+}, {
+  "n": "Arcane Lore",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You may take Arcane Abilities at creation and gain 50 experience points for them (no Parma Magica without The Gift)."
+}, {
+  "n": "Aristotelian Training",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You were schooled in the New Aristotle, learning from recently translated texts rather than the standard curriculum."
+}, {
+  "n": "Berserk",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You can enter a combat rage (Angry +2 or more) that grants bonuses to attack and Soak but is hard to control."
+}, {
+  "n": "Book Learner",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 effective Quality whenever you study from books."
+}, {
+  "n": "Cautious with (Ability)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You roll 2 fewer botch dice whenever you must roll them for one chosen Ability."
+}, {
+  "n": "Clear Thinker",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to resist lies, confusion, befuddlement, and trickery, whether mundane or magical."
+}, {
+  "n": "Common Sense",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "When you are about to do something foolish for the setting, the storyguide warns you — ideal for new players."
+}, {
+  "n": "Convoluted Mind",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Long exposure to demons lets you understand how their scheming minds work."
+}, {
+  "n": "Craft Guild Training",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Above-average craft training grants 50 bonus experience points for your trade."
+}, {
+  "n": "Educated",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Having attended a grammar or cathedral school, you may take Academic Abilities at character creation."
+}, {
+  "n": "Educated (Bardic)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You attended a Hibernian bardic school and may take its Academic Abilities at creation."
+}, {
+  "n": "Educated (Hebrew)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You studied in a yeshivah and may take Academic Abilities at character creation."
+}, {
+  "n": "Educated (Islamic)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You studied in a mosque or Qur'an school and may take Academic Abilities at creation."
+}, {
+  "n": "Educated (Vernacular)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Tutored for trade and leadership, you gain practical learning suited to a merchant family."
+}, {
+  "n": "Enduring Constitution",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Reduce Fatigue penalties by 1 and total wound penalties by 1 (minimum 0), and gain +3 to resist pain."
+}, {
+  "n": "Enticer of Multitudes",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "An Inspirational variant that rouses crowds only toward evil and cannot calm them again."
+}, {
+  "n": "Falls Like a Cat",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You take no injury from falls up to three times your height, or six times if you can catch handholds."
+}, {
+  "n": "Famous",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You enjoy a positive Reputation of 4, of any kind and however it was earned."
+}, {
+  "n": "Ferocity",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Like a magus you have Confidence points, but only while your natural animal ferocity is triggered."
+}, {
+  "n": "Finding Hidden Loot",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+9 to Awareness when searching a confined space whose contents you can move about freely."
+}, {
+  "n": "Forgettable Face",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "People struggle to recall or describe you afterward, so you often slip notice and blame."
+}, {
+  "n": "Free Expression",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to all rolls to create an original work of art."
+}, {
+  "n": "Good Teacher",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to the Quality of books you write and +5 to Source Quality for anyone you teach."
+}, {
+  "n": "Gossip",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Local contacts keep you informed; on a simple roll of 6+ you hear interesting news before almost anyone."
+}, {
+  "n": "Great (Characteristic)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Raise one Characteristic that is already +3 by a further point, to a maximum of +5."
+}, {
+  "n": "Hermetic Experience",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have had past dealings with the Order of Hermes and know something of its magi."
+}, {
+  "n": "Improved Characteristics",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You gain 3 extra points to spend on Characteristics (still capped at +3 without Great Characteristic). Repeatable."
+}, {
+  "n": "Independent Study",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+2 to Source Quality from Practice and +3 to Source Quality from Adventure experience."
+}, {
+  "n": "Indescribable Face",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your features are so unremarkable that others can rarely give a useful description of you."
+}, {
+  "n": "Inoffensive to (Beings)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "One class of beings never reacts badly to you, ignoring even an otherwise unsettling aura."
+}, {
+  "n": "Inspirational",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to others' relevant Personality Trait rolls when you rally them with words or example."
+}, {
+  "n": "Intuition",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "A natural sense lets you make the right decision more often than luck alone can explain."
+}, {
+  "n": "Jack-of-All-Trades",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You roll no extra botch dice when attempting an Ability in which you have no score."
+}, {
+  "n": "Just an Instant",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "After a few seconds in a room you notice anything of interest on its open surfaces without an Awareness roll."
+}, {
+  "n": "Keen Sense of Smell",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to all rolls involving smell, including following tracks by scent."
+}, {
+  "n": "Keen Vision",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to all rolls involving sight, though not to missile attacks."
+}, {
+  "n": "Knows People",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your wide acquaintance lets you match other people's needs and favors to your own advantage."
+}, {
+  "n": "Large",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your Size is +1, so you stand six to seven feet tall and take wounds in 6-point steps instead of 5."
+}, {
+  "n": "Latent Magical Ability",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have an untrained supernatural talent that may surface during play; until then it lies dormant."
+}, {
+  "n": "Learn (Ability) from Mistakes",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "The first time each session you botch or just fail with one Ability, you gain 5 experience points in it."
+}, {
+  "n": "Light Touch",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have unusually quick, precise hands and excellent fine coordination."
+}, {
+  "n": "Lightning Reflexes",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "When surprised you react almost instantly, rolling Quickness to act before you can even think."
+}, {
+  "n": "Linguist",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "All Languages advance 25% faster, and starting language experience is boosted by a quarter."
+}, {
+  "n": "Long-Winded",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to all Fatigue rolls, though this does not help spellcasting."
+}, {
+  "n": "Luck",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+1 to +3 on rolls where luck matters more than skill or talent."
+}, {
+  "n": "Magian Lineage",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are true-blood kin of the Persian Magians, a heritage common among Zoroastrian priests."
+}, {
+  "n": "Magic Items",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You begin with 25 extra levels of magic items, and your items improve faster over time."
+}, {
+  "n": "Magical Mount",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have a loyal mount or guard-beast with Cunning and a Magic Might of up to 25 that obeys simple commands."
+}, {
+  "n": "Mentored by Demons",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Demons teach you faster than any human master, but only the Abilities that serve their plans."
+}, {
+  "n": "Mild Aging",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+1 to your Living Conditions modifier on aging rolls and +3 to survive an aging crisis."
+}, {
+  "n": "Natural Leader",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your commanding manner makes others inclined to do as you say."
+}, {
+  "n": "Perfect Balance",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+6 to any roll to keep your footing, avoid falling, or cross narrow ledges."
+}, {
+  "n": "Perfect Eye for (Commodity)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You never misjudge the value of one commodity and its products, even by touch alone."
+}, {
+  "n": "Physician of Salerno",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You trained at the renowned School of Salerno, the finest source of medical learning."
+}, {
+  "n": "Piercing Gaze",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your intent stare unnerves people, as though you are peering into their souls."
+}, {
+  "n": "Prestigious Student",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "A well-off university student attended by two or three personal servants."
+}, {
+  "n": "Privileged Upbringing",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "A comfortable upbringing grants 50 bonus experience points for General, Academic, or Martial Abilities."
+}, {
+  "n": "Protection",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "A powerful patron shields you, so those who know your favored status treat you with care."
+}, {
+  "n": "Puissant Ability",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+2 to one Ability whenever you use it, though not when learning, teaching, or improving it."
+}, {
+  "n": "Rapid Convalescence",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to all rolls to recover from wounds."
+}, {
+  "n": "Rat Up a Drainpipe",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You move through built-up areas as if unobstructed, gaining a real edge in urban chases."
+}, {
+  "n": "Relic",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You own a minor holy relic with True Faith 1; it can be set into another item but has no powers of its own."
+}, {
+  "n": "Reserves of Strength",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Once per day you gain +3 effective Strength for a single action, then must make two Fatigue rolls."
+}, {
+  "n": "Schooled in Crime",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Trained in the criminal arts, you gain 50 bonus experience points for thievery-related Abilities."
+}, {
+  "n": "Self-Confident",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You start with Confidence 2 and five Confidence points instead of the usual three."
+}, {
+  "n": "Sharp Ears",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to all rolls involving hearing."
+}, {
+  "n": "Skilled Smuggler",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You can hide a dagger-sized item on you, imposing -9 on others' Awareness, and swap it out in minutes."
+}, {
+  "n": "Social Contacts",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have a broad network of acquaintances in one social circle to call on for information."
+}, {
+  "n": "Strong-Willed",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 on any roll requiring strength of will, so coercion rarely moves you."
+}, {
+  "n": "Student of (Realm)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+2 to all uses of the Lore for one realm of power: Magic, Faerie, Divine, or Infernal."
+}, {
+  "n": "Tainted Treasure",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You hold a great fortune that is cursed to bring harm, won by an ancestor's dark bargain."
+}, {
+  "n": "Templar Prestige",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "As a Templar you are widely respected and admired among your brother knights."
+}, {
+  "n": "Temporal Influence",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You carry some political weight, with a leader's ear and the ability to lead common folk at times."
+}, {
+  "n": "Tough",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to your Soak, letting you shrug off physical punishment."
+}, {
+  "n": "Trained Assassin",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Available only with a Nizari social status, you are schooled in the assassin's deadly craft."
+}, {
+  "n": "Troupe Upbringing",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "Raised among traveling entertainers, you gain +2 to rolls in one approved field of Abilities."
+}, {
+  "n": "True Love (PC)",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "An unbreakable bond to your true love steadies you, lending strength whenever you suffer or despair."
+}, {
+  "n": "Unaffected by The Gift",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "The Gift and Magical Air in others never bother you, not even a Blatant Gift."
+}, {
+  "n": "Venus' Blessing",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "+3 to Communication and Presence with characters who might be attracted to you."
+}, {
+  "n": "Warrior",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You may take Martial Abilities at creation and gain 50 bonus experience points that must be spent on them."
+}, {
+  "n": "Well-Traveled",
+  "k": "Virtue",
+  "c": "General",
+  "s": "Minor",
+  "d": "You get along easily across the region and gain 50 bonus experience points for languages, Area Lores, and social Abilities."
+}, {
+  "n": "Archieunuch",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A high-ranking, influential eunuch who enjoys the status and privilege of the most important court eunuchs."
+}, {
+  "n": "Capo",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "You head a trading company with branches in two or more cities, wielding real commercial power."
+}, {
+  "n": "Cathedral School Master",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "You teach at a cathedral school; you need Latin 5, Artes Liberales 5, and Teaching 3 or more."
+}, {
+  "n": "Doctor in (Faculty)",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A graduate of a university's higher faculty (medicine, law, or theology), licensed to instruct students."
+}, {
+  "n": "Guild Dean",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "You are the ultimate authority of your guild, making its key decisions and representing it politically."
+}, {
+  "n": "Landed Noble",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "You hold land, serfs, and men-at-arms, owing fealty upward and commanding a household of servants and guards."
+}, {
+  "n": "Lasiq",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A proven Nizari assassin who has completed seven killings and leads up to six fida'is; may take Martial Abilities."
+}, {
+  "n": "Magister in Artibus",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A Master of Arts of a European university who has completed the required two years of teaching."
+}, {
+  "n": "Magister in Medicina",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A doctor of medicine from a great medical school, with the same standing as Doctor in (Faculty)."
+}, {
+  "n": "Master Bard",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "An Anruth, a master of the bardic trade after at least nine years of study."
+}, {
+  "n": "Muqtaʿ",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "Holder of an iqta land-grant in the Islamic world, much like a landed noble, with income and military duties."
+}, {
+  "n": "Partner",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "You hold a large stake in a wealthy trading company, living as well as a minor noble but without the arms."
+}, {
+  "n": "Redcap",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "Though unGifted, you are a full member of the Order of Hermes and House Mercere, serving as a messenger."
+}, {
+  "n": "Rosh Beth Din",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "Head of a rabbinic court; you need age plus Hebrew 5, Rabbinic Law 5, and Theology: Judaism 5."
+}, {
+  "n": "Senior Clergy",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A bishop, abbot, abbess, or similar Church leader with access to the Church's resources and added duties."
+}, {
+  "n": "Senior Master",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A long-established guild master who has risen to authority in the guild's self-governance."
+}, {
+  "n": "Templar Commander",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A commander of the Knights Templar with authority over the order across a province or preceptory."
+}, {
+  "n": "Venditor",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "A selling-agent who barters a Verditius maga's goods to mundane buyers, often a minor noble or cleric."
+}, {
+  "n": "Almogaten",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Leader of a band of Almogavar raiders, responsible for a dozen men; may take Martial Abilities."
+}, {
+  "n": "Almogavar",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A member of a roving mercenary-raider band living by a code of honor and mutual loyalty."
+}, {
+  "n": "Baccalaureus",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Holder of a Bachelor of Arts after completing a three-year university program."
+}, {
+  "n": "Beadle",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A university dean's assistant who carries insignia, collects dues, and makes official announcements."
+}, {
+  "n": "Brother Chaplain",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A priest of a crusading order, bound by vows of obedience, poverty, and chastity, answerable only to the pope."
+}, {
+  "n": "Brother Knight",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A knight of a holy crusading order, sworn to lifelong obedience, poverty, and chastity."
+}, {
+  "n": "Brother Sergeant",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A non-noble member of a crusading order under the same vows, though less strictly enforced."
+}, {
+  "n": "Bureaucrat",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A civil administrator or scribe (katib) who may take Academic Abilities. Available to men only."
+}, {
+  "n": "Clerk",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A literate professional (scribe, accountant, lawyer, functionary) who may take Academic Abilities at creation."
+}, {
+  "n": "Custos",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A high-status covenant employee who may take one restricted Ability group: Martial, Academic, or Arcane."
+}, {
+  "n": "Emir",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Like a Knight, but a Muslim noble likely as skilled in hunting, religion, and culture as in war."
+}, {
+  "n": "Eunuch",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A trained Byzantine court servant (steward, scribe, accountant), likely employed by a noble or covenant."
+}, {
+  "n": "Factor",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You manage a trading house's interests in one city, with strong social standing and wide connections."
+}, {
+  "n": "Failed Apprentice",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You were apprenticed to a magus but never finished, your Gift incomplete or lost."
+}, {
+  "n": "Falconer",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You train hawks and falcons for a noble patron and hold an honored place in the household."
+}, {
+  "n": "Fidaʾi",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A devoted Nizari agent trained to carry out a master's orders, including assassination."
+}, {
+  "n": "Forge-Companion",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "An unGifted craftsman serving a Verditius magus; you gain 50 experience points for the Crafts your master practices."
+}, {
+  "n": "Gentleman/woman",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A minor (perhaps illegitimate) member of a noble family, addressed as Lord or Lady but not in line to inherit."
+}, {
+  "n": "Guild Apprentice",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A youth aged 10 to 20 learning a trade under a guild master by binding contract."
+}, {
+  "n": "Guild Master",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A master craftsman who may practice and hire legally; may take Academic Abilities at creation."
+}, {
+  "n": "Ineslemen",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A member of a Tuareg religious tribe, granted authority over disputes and freedom from feudal demands."
+}, {
+  "n": "Journeyman",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A trained guild craftsman who works for a master for wages under guild supervision."
+}, {
+  "n": "Jurist",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A medieval lawyer (judge, advocate, or procurator) who may take Latin, Artes Liberales, and Civil and Canon Law."
+}, {
+  "n": "Knight",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A noble warrior who, unless Poor, owns quality weapons, armor, and a horse."
+}, {
+  "n": "Lone Redcap",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A Redcap with no Mercer House ties, so you receive no magic items or Longevity Rituals."
+}, {
+  "n": "Mamluk",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A freed military slave, trained from childhood as an elite soldier and educated in Islam."
+}, {
+  "n": "Marshal",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "The specialist who runs a noble's stables, an honored household post."
+}, {
+  "n": "Master of Kennels",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You run a noble patron's kennels, responsible for the hounds' training, breeding, and health."
+}, {
+  "n": "Mazdean Priest",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "An ordained Zoroastrian mobed who performs the faith's rituals and ceremonies."
+}, {
+  "n": "Mendicant Friar",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A Franciscan or Dominican friar who travels preaching and serving the poor and the sick."
+}, {
+  "n": "Mercenary Captain",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You lead a small mercenary company of 5 to 10, much like a knight-errant without the prestige."
+}, {
+  "n": "Merchant Adventurer",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You command a ship and crew with capital for cargo, though possibly burdened by heavy debts."
+}, {
+  "n": "Notary",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A legal official who drafts contracts, witnesses charters, and seals documents for lords or towns."
+}, {
+  "n": "Perfectus",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A Cathar leader who preaches the Gospel and abstains from meat, sex, and worldly entanglements."
+}, {
+  "n": "Priest",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "An ordained priest able to perform the Mass, Penance, and Extreme Unction."
+}, {
+  "n": "Rabbi",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "An ordained teacher and wise man of the Jewish community, respected and sought for guidance."
+}, {
+  "n": "Religious",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A monk, nun, hermit, or similar; you may take Academic Abilities (Wealthy and Poor rarely fit)."
+}, {
+  "n": "Senior Bard",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A bard of five or six years' training, ranked Cano or Cli, with a Local Reputation of 2 as a storyteller."
+}, {
+  "n": "Shadchan",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A trusted Jewish marriage-arranger who matches families by wealth, background, and character."
+}, {
+  "n": "Simple Student",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A university student without a degree yet (14-16), gaining 30 experience points per finished year in Latin or Artes Liberales."
+}, {
+  "n": "Sufi",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A Muslim mystic seeking union with God through asceticism, led by a shaykh within a tariqa."
+}, {
+  "n": "Templar Administrator",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Nominally a Templar brother, you really administer the order's many holdings and activities."
+}, {
+  "n": "Templar Office Holder",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You hold a post in the local Templar hierarchy, such as deputy commander or marshal."
+}, {
+  "n": "Templar Specialist",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A skilled Templar employee, such as a smith, notary, scribe, or translator, filling a needed role."
+}, {
+  "n": "Town Magistrate",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A town judicial officer with a small staff of up to five minor officials."
+}, {
+  "n": "Troubadour/Trobairitz",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A wandering minstrel-poet of the southern-French tradition, now spread across western Europe."
+}, {
+  "n": "University Grammar Teacher",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You teach grammar to a university's younger members and may take Latin and Artes Liberales."
+}, {
+  "n": "Wise One",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A mystic, seer, or healer of the common folk, usually magical and likely to take a supernatural Virtue."
+}, {
+  "n": "ʿAlim",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A respected Muslim scholar learned in the Qur'an and religious law."
+}, {
+  "n": "Apprentice",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A Gifted child taken on by an experienced Hermetic magus, with the troupe's approval."
+}, {
+  "n": "Bard",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A trained poet-musician of the Gaelic tradition, accorded respect and able to take fitting Abilities."
+}, {
+  "n": "Covenfolk",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A member of a covenant's staff, supported by the covenant so your living standard matches its wealth."
+}, {
+  "n": "Craftsman",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "You live by making and selling goods, usually as a free town resident; Wealthy and Poor apply normally."
+}, {
+  "n": "Domestic Animal",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "You are an animal owned by a covenant or character, fed and housed in return for service."
+}, {
+  "n": "Hermetic Magus",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "You are a member of the Order of Hermes; all magi must take this status, and only magi may."
+}, {
+  "n": "Laborer",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A trained worker whose valued trade provides a service rather than a finished good."
+}, {
+  "n": "Male Guild Sponsor",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A woman admitted to a male guild trade through her father or husband, and allowed to work it."
+}, {
+  "n": "Merchant",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "You live by buying and selling, from peddler to traveling trader; Wealthy and Poor apply normally."
+}, {
+  "n": "Nuntius",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A university messenger who carries mail and money between students and their families."
+}, {
+  "n": "Paid Rights",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A formal allowance, chiefly for women, to hold an authority that society usually restricts to men."
+}, {
+  "n": "Peasant",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A free worker of the land who may hire labor if wealthy or be hired out if poor."
+}, {
+  "n": "Shamash",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "The synagogue's servant, responsible for its upkeep and readiness for the community."
+}, {
+  "n": "Sofer",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "The scribe who writes new Torah scrolls and repairs existing ones as the community requires."
+}, {
+  "n": "Templar Confrere/Consoeur",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A lay associate who supports the Knights Templar without taking the full vows."
+}, {
+  "n": "Templar Servant",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "A servant at a Templar commandery, supported and paid by the order."
+}, {
+  "n": "Wanderer",
+  "k": "Virtue",
+  "c": "Social Status",
+  "s": "Free",
+  "d": "You belong to no community and live by casual work; Wealthy and Poor apply normally."
+}, {
+  "n": "Devil Child",
+  "k": "Virtue",
+  "c": "Mythic Companion",
+  "s": "Free",
+  "d": "Born of demonic parents, you are a Mythic Companion and gain Demonic Might or Demonic Powers free."
+}, {
+  "n": "Faerie Doctor",
+  "k": "Virtue",
+  "c": "Mythic Companion",
+  "s": "Free",
+  "d": "You are a Mythic Companion Faerie Doctor and gain the Dowsing Virtue free."
+}, {
+  "n": "Nephilim",
+  "k": "Virtue",
+  "c": "Mythic Companion",
+  "s": "Free",
+  "d": "You are one of the Nephilim and a Mythic Companion, gaining Strong Angelic Heritage free."
+}, {
+  "n": "Spirit Votary",
+  "k": "Virtue",
+  "c": "Mythic Companion",
+  "s": "Free",
+  "d": "A Mythic Companion who gains Second Sight free and 2 points of Virtues for every 1 point of Flaws."
+}, {
+  "n": "Ambitious",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You must be the best or most powerful at something, and you refuse to be distracted from pursuing it."
+}, {
+  "n": "Avaricious",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You crave wealth and hoard it rather than spend it; this can also fixate on books or vis."
+}, {
+  "n": "Blatant Gift",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your Gift openly unsettles people and frightens or enrages animals, worsening the usual social penalties."
+}, {
+  "n": "Chaotic Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your spontaneous magic is wild: you must declare a desired level, and the results swing unpredictably."
+}, {
+  "n": "Compassionate",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You cannot bear others' suffering and will drive yourself to exhaustion to help anyone hurt or in trouble."
+}, {
+  "n": "Compulsion",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You have an urge you struggle to resist, such as drinking, gambling, or boasting."
+}, {
+  "n": "Compulsive Lying",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Telling the truth is genuinely hard for you, except where any lie would be obviously absurd."
+}, {
+  "n": "Deficient Technique",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "All Casting and Lab Totals using one Technique are halved (advancement is not)."
+}, {
+  "n": "Depraved",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You work to undermine religion, sinning openly and avoiding the Dominion."
+}, {
+  "n": "Difficult Longevity Ritual",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Anyone making a Longevity Ritual for you must halve their Lab Total; you can still make others' normally."
+}, {
+  "n": "Driven",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "A single life-shaping goal drives you, and you turn straight to a new one the moment you achieve it."
+}, {
+  "n": "Envious",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You believe others are unfairly better off and scheme to ruin them and seize what they have."
+}, {
+  "n": "Environmental Magic Condition",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your Casting and Lab Totals are halved in a common condition, such as whenever you are indoors."
+}, {
+  "n": "Gender Nonconforming",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You do not fit the behavior society expects of your assigned gender, drawing suspicion and friction."
+}, {
+  "n": "Generous",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You give away your belongings to almost anyone who asks, keeping little for yourself."
+}, {
+  "n": "Greedy",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You eat and drink to excess at every chance, often to your own harm."
+}, {
+  "n": "Hatred",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You hate one person or group so deeply that hurting them dominates your life."
+}, {
+  "n": "Higher Purpose",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "A noble, altruistic cause guides you above petty concerns and can override your self-interest."
+}, {
+  "n": "Lecherous",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You pursue sexual conquest widely, which constantly entangles you in trouble."
+}, {
+  "n": "Magic Addiction",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Casting thrills you; once you start it is hard to stop, and you cast on and on until you collapse."
+}, {
+  "n": "Meddler",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You compulsively try to fix other people's lives, wasting time and stirring resentment."
+}, {
+  "n": "Monastic Vows (Hermetic)",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Vows of poverty, chastity, and obedience bar you from owning vis or marrying and constrain your magic items."
+}, {
+  "n": "Necessary Condition",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "To cast at all you must perform a set simple action (singing, spinning); if you cannot, you cannot cast."
+}, {
+  "n": "Obsessed",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You fixate on a prized object, act, or ideal, neglecting more urgent matters."
+}, {
+  "n": "Optimistic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You are certain everything will turn out for the best, even when you accept you might fail."
+}, {
+  "n": "Overconfident",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You have unshakable faith in your abilities and simply cannot imagine failure."
+}, {
+  "n": "Oversensitive",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Something others merely dislike you find intolerable, and you may even start fights over it."
+}, {
+  "n": "Pagan",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You follow no Church and are unbaptized, which alarms authorities and frightens common folk."
+}, {
+  "n": "Painful Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Every spell you cast costs you the equivalent of a Fatigue level in pain."
+}, {
+  "n": "Pious",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You devoutly follow your religion, embracing its demands and shunning what it forbids."
+}, {
+  "n": "Proud",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You think yourself better than nearly everyone and demand the respect you feel you are owed."
+}, {
+  "n": "Rebellious",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You resist any authority imposed on you and work against those who try to command you."
+}, {
+  "n": "Reckless",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You rarely register danger and charge in without weighing the risks."
+}, {
+  "n": "Restriction",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Under one uncommon condition (touching earth, certain targets) you cannot cast spells at all."
+}, {
+  "n": "Rigid Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You cannot use vis while casting, so you cannot boost your spells or cast Ritual magic."
+}, {
+  "n": "Short-Ranged Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Casting Totals are halved when you are not touching the target, and Lab Totals are halved for ranges beyond Touch."
+}, {
+  "n": "Study Requirement",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You can study magic only in the presence of the relevant Art, such as a fire to study Ignem."
+}, {
+  "n": "The Constant Expression",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You endlessly leak minor non-fatiguing spontaneous effects, causing constant distraction and odd problems."
+}, {
+  "n": "Twilight Prone",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You must resist Twilight on a single magical botch rather than a double, so it strikes you far more often."
+}, {
+  "n": "Unnatural Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "None of your Creo rituals have a permanent effect, no matter how much vis you spend."
+}, {
+  "n": "Unstructured Caster",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You can manage Formulaic magic only through extreme effort."
+}, {
+  "n": "Vow",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You are sworn to something difficult (never to kill, never to speak), and breaking it is a grave matter."
+}, {
+  "n": "Vulnerable Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your magic is automatically dispelled under one uncommon condition, such as touching iron."
+}, {
+  "n": "Waster of Vis",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You waste a quarter of any vis you use, though the lost pawns still count toward your botch dice."
+}, {
+  "n": "Weak Magic Resistance",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "Your Magic Resistance is much weaker in common, easily exploited circumstances, such as when wet or turned away."
+}, {
+  "n": "Weak Spontaneous Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You can never exert yourself for spontaneous magic, always dividing your Casting Score by 5."
+}, {
+  "n": "Weakness",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You have a soft spot for someone or something that overrides duty and common sense."
+}, {
+  "n": "Wrathful",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Major",
+  "d": "You anger easily over trifles, and your rage at real wrongs is terrible to behold."
+}, {
+  "n": "Bound Casting Tools",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your Verditius casting tools become lasting Arcane Connections to you."
+}, {
+  "n": "Bound Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "When you die, all your spells end and every item you made stops working."
+}, {
+  "n": "Brutal Artist",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Only for Jerbiton magi; you make and enjoy art your Housemates consider ugly."
+}, {
+  "n": "Careless Sorcerer",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You roll 2 extra botch dice when casting spells (still none if you would normally roll none)."
+}, {
+  "n": "Ceremonial Spontaneous Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You can cast spontaneous spells only by slow Ceremonial Casting."
+}, {
+  "n": "Clumsy Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your aimed spells are unreliable: any aiming roll of 0 is an automatic botch."
+}, {
+  "n": "Consumed Casting Tools",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your casting tools are used up after use and take an hour each to remake; you cannot stockpile them."
+}, {
+  "n": "Corrupted Arts",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You learned an Art from a corrupted source, gaining +3 to Casting Totals when using it for selfish or sinful ends."
+}, {
+  "n": "Corrupted Spells",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "At least 30 levels of your spells are corrupted, giving +3 to Casting and Penetration when used sinfully."
+}, {
+  "n": "Creative Block",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "-3 to Lab Totals when inventing without a text or teacher, and experimentation goes worse."
+}, {
+  "n": "Cyclic Magic (negative)",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "At a set time your magic weakens: -3 to all Lab Totals and Casting Scores then."
+}, {
+  "n": "Deficient Form",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "All Casting and Lab Totals using one Form are halved (Magic Resistance and advancement excepted)."
+}, {
+  "n": "Deleterious Circumstances",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "All your magic totals except Magic Resistance are halved under one uncommon circumstance."
+}, {
+  "n": "Difficult Spontaneous Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You can never cast spontaneous magic without exerting yourself, though exerting works as normal."
+}, {
+  "n": "Disjointed Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You gain no benefit from knowing similar spells or from Arts already invested in an item."
+}, {
+  "n": "Disorientating Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "After casting any spell you must spend a round recovering before you can act again."
+}, {
+  "n": "Exciting Experimentation",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "When you experiment, roll two dice on the table and the storyguide applies the more dramatic result."
+}, {
+  "n": "Fettered Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "All your spells and any items you activate are Arcane Connections back to you."
+}, {
+  "n": "Flawed Parma Magica",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your Parma gives only half Magic Resistance against one Form; may be taken more than once."
+}, {
+  "n": "Harmless Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your Perdo spells never destroy permanently: targets recover once the duration ends."
+}, {
+  "n": "Hedge Wizard",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Other magi distrust your esoteric magic, leaving you a negative Reputation of 3 within the Order."
+}, {
+  "n": "Incompatible Arts",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You cannot use two specific Technique-and-Form combinations at all, even as requisites."
+}, {
+  "n": "Inconstant Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your magic stutters, so spells that need your ongoing guidance are easily disrupted."
+}, {
+  "n": "Infamous Master",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your master was despised, so magi expect little of you even if you have done nothing wrong."
+}, {
+  "n": "Limited Magic Resistance",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "One of your Form scores never adds to Magic Resistance, though you keep a base of 0 without Parma."
+}, {
+  "n": "Loose Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your Advancement Total is halved whenever you try to master spells."
+}, {
+  "n": "Poor Formulaic Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "-5 to every roll to cast a Formulaic spell (Rituals are unaffected)."
+}, {
+  "n": "Short-Lived Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your spell durations shrink a step: a year becomes a moon, a moon a day, a sun a Diameter."
+}, {
+  "n": "Slow Caster",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your Formulaic spells take two rounds to cast, leaving you exposed in a fight."
+}, {
+  "n": "Spontaneous Casting Tools",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You must use casting tools for spontaneous spells too, juggling 15 of them, one per Art."
+}, {
+  "n": "Stockade Parma Magica",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You cannot lower your Parma, so even friendly spells must penetrate it to affect you."
+}, {
+  "n": "Susceptibility to Divine Power",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You suffer double the usual penalties and botch dice to your magic in a Divine aura."
+}, {
+  "n": "Susceptibility to Faerie Power",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Entering a Faerie aura, you must make a Stamina roll against its rating or become disoriented."
+}, {
+  "n": "Susceptibility to Infernal Power",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Entering an Infernal aura, you must roll Stamina against its rating or fall ill (-1 to all rolls)."
+}, {
+  "n": "Unimaginative Learner",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "-3 to your rolls when you study from raw vis."
+}, {
+  "n": "Unpredictable Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You always roll a stress die when using magic, risking a botch even while completely relaxed."
+}, {
+  "n": "Vulnerable Casting",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "You lose 1 more Fatigue level than normal whenever casting fatigues you."
+}, {
+  "n": "Vulnerable to Folk Tradition",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Onlookers who notice your magic can disrupt it with simple folk rituals, like spitting or signing against evil."
+}, {
+  "n": "Warped Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your magic always carries the same unpleasant side effect, growing worse with the spell's level."
+}, {
+  "n": "Weak Enchanter",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Halve your Lab Total whenever you create or investigate an enchanted item."
+}, {
+  "n": "Weak Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your spells penetrate poorly: halve all Penetration Totals and the Penetration you instill into items."
+}, {
+  "n": "Weak Parens",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your master trained you poorly, so you begin with 60 fewer experience points and 30 fewer spell levels."
+}, {
+  "n": "Weak Scholar",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "-6 to Lab Totals when working from others' lab texts, including when reinventing their spells."
+}, {
+  "n": "Weird Magic",
+  "k": "Flaw",
+  "c": "Hermetic",
+  "s": "Minor",
+  "d": "Your loose control means you roll one extra botch die whenever a spellcasting roll comes up 0."
+}, {
+  "n": "Age Quickly",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You age twice as fast as normal, so your effective age climbs two years for every year that passes."
+}, {
+  "n": "Blatant Magical Air",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Your Magical Air or Gift is so disturbing that others can barely stand to be near you."
+}, {
+  "n": "Bound to (Realm)",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You sicken and cannot survive long outside a particular kind of supernatural aura."
+}, {
+  "n": "Bound to (Role) Role",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You are physically bonded to some device, leaving you permanently tied to it."
+}, {
+  "n": "Broken Vessel",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "Your supernatural powers may be only temporary, and each failure with them drains that power further away."
+}, {
+  "n": "False Power",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "One of your Supernatural Virtues reads as Infernal under investigation, making you appear unholy."
+}, {
+  "n": "Greater Malediction",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "A supernatural curse hinders you as badly as any other Major Flaw."
+}, {
+  "n": "Horrifying Appearance – Snake Legs",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You have serpent tails instead of legs; movement is mostly unhindered, but your appearance horrifies onlookers."
+}, {
+  "n": "Hunger for (Form) Magic",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "You depend on magic to live and must consume 1 pawn of vis each season matching one Form."
+}, {
+  "n": "Lycanthrope",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "On nights of the full moon you are cursed to become a dangerous predator such as a wolf or bear."
+}, {
+  "n": "Raised from the Dead",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Major",
+  "d": "A miracle returned you to life, but you begin with at least 3 Warping points and gain another each year."
+}, {
+  "n": "(Form) Monstrosity",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You (usually an animal) bear a monstrous mutation tied to one magical Form."
+}, {
+  "n": "(Realm) Stigmatic",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "In the presence of supernatural powers you occasionally manifest telltale physical phenomena."
+}, {
+  "n": "Baneful Circumstances",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Your supernatural nature leaves you weakened in fairly common situations, such as while touching the ground."
+}, {
+  "n": "Corrupted Abilities",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "One or more Abilities came from a demon or corrupt source, giving +3 when used for selfish or sinful ends."
+}, {
+  "n": "Cursed Guile",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You roll 3 extra botch dice when using Guile, and people rarely believe you even when you are honest."
+}, {
+  "n": "Deteriorating Power",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "One of your powers weakens over time, scaling with your age, spent Might, or Warping."
+}, {
+  "n": "Evil Eye",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Your gaze brings misfortune: characters making stress rolls in your presence roll an extra botch die."
+}, {
+  "n": "Exiled Atlantean",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "An exiled Atlantean, you are tainted by the surface world and cannot return to your magic regio."
+}, {
+  "n": "Flawed Powers",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "One of your major supernatural powers is limited or restricted in some fashion."
+}, {
+  "n": "Fluctuating Fortune",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Your finances swing wildly, counting as Wealthy one year and Poor the next."
+}, {
+  "n": "Folk Magic",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You can perform very minor magical tricks drawn from scraps of folk lore."
+}, {
+  "n": "Inscribed Shadow",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Glowing symbols mark your shadow, alarming common folk but easing other Criamon's reading of your stigmata (+3)."
+}, {
+  "n": "Lesser Malediction",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "A supernatural curse hinders you about as much as a Minor General Flaw."
+}, {
+  "n": "Manifest Sin",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "A past sin stains your spirit and is visible to those who can perceive hidden things."
+}, {
+  "n": "Monstrous Blood",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Exposure to the Magic realm left your true form with unfortunate supernatural traits."
+}, {
+  "n": "Necessary (Realm) Aura for (Ability)",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Without a particular supernatural aura present, you cannot focus on certain tasks."
+}, {
+  "n": "Prohibition",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "A geas binds you; break its restriction and the curse strikes you in full force."
+}, {
+  "n": "Restricted Power",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "One normally at-will supernatural power is limited in when or how you may use it."
+}, {
+  "n": "Slow Power",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "One supernatural power needs an extra round of preparation to activate; repeatable for different powers."
+}, {
+  "n": "Stigmatic Catalyst",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Your presence sometimes causes symbolic marks to appear on unprotected people nearby."
+}, {
+  "n": "Susceptibility to Sunlight",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Bright sunlight pains and tires you, giving -2 to all sight rolls in bright conditions."
+}, {
+  "n": "Susceptibility to Warping",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Constant exposure to magic leaves you more vulnerable to Warping than most."
+}, {
+  "n": "Unruly Air",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Your presence pushes social situations to extremes, making good moods better and bad ones worse."
+}, {
+  "n": "Viaticarus",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You once received the last rites at death's door, leaving a supernatural mark upon you."
+}, {
+  "n": "Visions",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "You often see symbolic, confusing images of the past, a possible future, or distant events."
+}, {
+  "n": "Warped by Magic",
+  "k": "Flaw",
+  "c": "Supernatural",
+  "s": "Minor",
+  "d": "Powerful magical forces from your adventures have left a lasting mark on you."
+}, {
+  "n": "Blind",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You have little or no sight, so reading, missile weapons, and unfamiliar travel are beyond you."
+}, {
+  "n": "Crippled",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "Your legs are useless or gone; you cannot walk, only drag yourself or use a trolley."
+}, {
+  "n": "Deaf",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You cannot hear at all, which makes understanding speech and communicating difficult."
+}, {
+  "n": "Dwarf",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You are child-sized with Size -2, so wounds worsen in 3-point steps and you walk two-thirds normal speed."
+}, {
+  "n": "Enfeebled",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You cannot exert yourself for more than seconds, so combat, chases, and long hikes leave you helpless."
+}, {
+  "n": "Leprosy",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You have leprosy: a permanent -2 to Living Conditions (worse in a colony) and a heavy wound on every aging crisis."
+}, {
+  "n": "Low Self-Esteem",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You think little of yourself and begin with no Confidence Score or points, ever."
+}, {
+  "n": "Magical Air",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "People and animals react to you as if you had The Gift; not available if you actually have it."
+}, {
+  "n": "Mute",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You cannot speak, though you understand languages and can communicate by gesture or, with a Virtue, in writing."
+}, {
+  "n": "No Hands",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "Without hands, handwork is impossible and magi take -5 to all Casting Scores (offset by Subtle Magic or Still Casting)."
+}, {
+  "n": "Poor",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You are poor for your class, must work three seasons a year, and can afford only the basics."
+}, {
+  "n": "Repellent",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "A demonic trait makes you fearsome to ordinary folk, giving -6 on all rolls that require their trust."
+}, {
+  "n": "The Falling Evil",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Major",
+  "d": "You suffer random convulsions and blackouts that can strike at the worst possible moments."
+}, {
+  "n": "Ability Block",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You can never learn one whole class of Abilities, such as all Martial Abilities."
+}, {
+  "n": "Afflicted Tongue",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "A speech impediment gives -2 to all rolls using your voice, including spoken spellcasting."
+}, {
+  "n": "Anchored to the (Land)",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You feel lonely and low whenever you cannot see or hear one particular type of environment."
+}, {
+  "n": "Apostate",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Having changed faiths, you have a bad Reputation of 4 among your old faith and some distrust from the new."
+}, {
+  "n": "Arthritis",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Stiff, painful joints give -3 to sustained or repetitive movement, and can sometimes disable you."
+}, {
+  "n": "Careless with (Ability)",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are reckless with one important Ability, risking spectacular failures with it."
+}, {
+  "n": "Castratus",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Castrated before puberty, you are beardless and effeminate, with -3 on social rolls in Latin culture."
+}, {
+  "n": "Clumsy",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are graceless, taking -3 on related rolls and an extra botch die on Dexterity actions."
+}, {
+  "n": "Craving for Travel",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You grow lonely and depressed unless you regularly expose yourself to new experiences."
+}, {
+  "n": "Curse of Slander",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Wherever you settle, ugly rumors about you soon spread, whether by bad luck or a curse."
+}, {
+  "n": "Devoted Parent/Child",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are bound to a parent or child; being apart over a day brings anxiety and -1 to all rolls."
+}, {
+  "n": "Dhimmi",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "A non-Muslim under Muslim rule, you pay the head tax and live under various social restrictions."
+}, {
+  "n": "Disfigured",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "A visible disfigurement makes you ugly and easy to recognize, with -3 to looks-based Presence rolls."
+}, {
+  "n": "Environmental Sensitivity",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "One uncommon condition (bad air, salt water, extreme heat) gives -3 to Stamina for debilitation checks."
+}, {
+  "n": "Failed Student",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You studied for a university license but failed your final examination."
+}, {
+  "n": "Feral Scent",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You carry the strong smell of a wild animal, so people instinctively keep their distance."
+}, {
+  "n": "Feral Upbringing",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Raised in the wilderness, you long could not speak and know little of human ways."
+}, {
+  "n": "Fish Out of Water (Terrain)",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have an affinity for one terrain and feel awkward and ill at ease away from it."
+}, {
+  "n": "Flashbacks",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Combat or similar stress can trigger vivid, hard-to-ignore flashbacks of past horrors."
+}, {
+  "n": "Fragile Constitution",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Sickly and weak, you take -3 on all rolls to recover from wounds and disease."
+}, {
+  "n": "Frail",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are easily hurt, with -3 to your Soak score."
+}, {
+  "n": "Gullible",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are easily fooled, granting liars +1 to +3 on their Guile rolls against you."
+}, {
+  "n": "Hallucinations",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You suffer vivid hallucinations that feel like true visions but are only your imagination."
+}, {
+  "n": "Hobbled",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Both legs are badly damaged; you need crutches, move at half a mile per hour, and take -9 to move quickly."
+}, {
+  "n": "Hunchback",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "A deformed body gives a grotesque look: -3 to agility and balance rolls and to looks-based Communication."
+}, {
+  "n": "Incomprehensible",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You convey knowledge so poorly that anyone learning from you or your books halves their Advancement Total."
+}, {
+  "n": "Independent Craftsman",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You work badly with others, treating your Leadership and Craft as 3 lower on any shared task."
+}, {
+  "n": "Infamous",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have a bad Reputation of 4 for some notorious deeds."
+}, {
+  "n": "Jinxed",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You draw bad luck onto those around you, though you yourself roll no extra botch dice."
+}, {
+  "n": "Judged Unfairly",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "People reliably misread you, distrusting and underestimating you no matter what you do."
+}, {
+  "n": "Lame",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "One weakened leg slows you to about a mile per hour, so almost anyone can outrun you."
+}, {
+  "n": "Lingering Injury",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "An old injury that never healed properly gives -1 to all rolls involving physical activity."
+}, {
+  "n": "Low Tolerance",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You handle pain and fatigue poorly: +1 to Fatigue penalties and +1 to wound penalties."
+}, {
+  "n": "Master of None",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You can never stick to one task or job for longer than a single season."
+}, {
+  "n": "Missing Ear",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You cannot place the direction of sounds and take -3 to hearing rolls."
+}, {
+  "n": "Missing Eye",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Poor depth perception gives -3 to missile and spell aiming and -1 to melee attacks."
+}, {
+  "n": "Missing Hand",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "With one hand gone, climbing, combat, and other two-handed work take at least -3."
+}, {
+  "n": "Motion Sickness",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Riding or sailing makes you ill, doubling fatigue loss on long journeys (minimum two levels)."
+}, {
+  "n": "Night Terrors",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Frequent nightmares plague you; you must roll against Ease Factor 9 to avoid a night of terrors."
+}, {
+  "n": "No Sense of Direction",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You cannot follow directions and often confuse left and right."
+}, {
+  "n": "Nocturnal",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your body wants to sleep until noon, giving -1 to all rolls between dawn and midday."
+}, {
+  "n": "Obese",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your bulk gives -1 to rolls needing speed or grace and -3 to all Fatigue rolls."
+}, {
+  "n": "Offensive to (Beings)",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "One class of beings reacts badly to you, meeting you with hostility or unease."
+}, {
+  "n": "Palsied Hands",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Shaking hands give -2 to all rolls that hold or wield objects, including weapons and spellcasting."
+}, {
+  "n": "Poor (Characteristic)",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Lower one Characteristic that is already -3 or worse by a further point."
+}, {
+  "n": "Poor Concentration",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "A short attention span gives -3 to all Concentration rolls."
+}, {
+  "n": "Poor Eyesight",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Bleary vision gives -3 to sight rolls, including attack and defense, and stacks with Missing Eye."
+}, {
+  "n": "Poor Hearing",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "-3 to hearing rolls, and you struggle to follow unfamiliar accents or dialects."
+}, {
+  "n": "Poor Living Conditions",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "An extra -1 to your Living Conditions modifier leaves you more worn down by daily life."
+}, {
+  "n": "Poor Student",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "-3 to all Advancement from teaching and books (other forms of study are unaffected, minimum 1)."
+}, {
+  "n": "Primitive Equipment",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You can use only the simplest tools, unable or unwilling to handle better equipment."
+}, {
+  "n": "Raised in the Gutter",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You handle the lower classes easily but clearly do not know how to act among your betters."
+}, {
+  "n": "Regular",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "A strict religious rule binds you, so you must spend one free season each year on worship."
+}, {
+  "n": "Restricted Learning",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You can gain experience only in five Abilities chosen at character creation."
+}, {
+  "n": "Rolling Stone",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Having moved so often, you struggle to form attachments and take -1 to social rolls in any community."
+}, {
+  "n": "Savantism",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are physically capable but simpleminded and slow-witted."
+}, {
+  "n": "Short of Breath",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You tire quickly, taking -3 to all Stamina rolls to avoid fatigue, including Concentration."
+}, {
+  "n": "Sleep Disorder",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You rarely sleep soundly, so you tend to nod off during quiet or boring stretches."
+}, {
+  "n": "Slow Reflexes",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You react poorly to surprises, taking -3 to Initiative when a quick response is needed."
+}, {
+  "n": "Small Frame",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Your Size is -1, so wounds worsen in 4-point steps instead of 5."
+}, {
+  "n": "Social Handicap",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Some trait keeps you from mixing easily, giving -3 on appropriate social rolls."
+}, {
+  "n": "Stuck in Your Ways",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Set in your old covenant's habits, you clash with how your new home does things."
+}, {
+  "n": "Tainted with Evil",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "An air of corruption clings to you, so people feel ill at ease and a good Reputation is impossible."
+}, {
+  "n": "Unbearable to (Beings)",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "One class of beings (humans, demons, or divine beings) cannot stand your presence."
+}, {
+  "n": "Uncertain Faith",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You struggle to fully express devotion, leaving your faith wavering."
+}, {
+  "n": "Uncontrollable Strength",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You do not know your own strength and sometimes cannot control it (Strength 0 or higher only)."
+}, {
+  "n": "Uninspirational",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are bland and forgettable, with Presence and Communication capped at 0."
+}, {
+  "n": "Unlucky",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Chance frequently turns against you at the worst moments."
+}, {
+  "n": "Unspecialized",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have no specialty in any of your Abilities."
+}, {
+  "n": "Warped Senses",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You are oversensitive to certain conditions, which alters your behavior in some uncommon situations."
+}, {
+  "n": "Weak Characteristics",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "You have 3 fewer points to spend on Characteristics; may be taken twice, leaving only one point."
+}, {
+  "n": "Witch Marks",
+  "k": "Flaw",
+  "c": "General",
+  "s": "Minor",
+  "d": "Minor marks brand you to folk-lorists as a diabolist, risking blame, hounding, or worse."
+}, {
+  "n": "Busybody",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You pry into everyone's affairs and are skilled at coaxing out private secrets."
+}, {
+  "n": "Carefree",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You stay cheerful and untroubled in just about all circumstances."
+}, {
+  "n": "Church Upbringing",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "Raised mostly by clerics, you may hold odd religious views and few worldly ties."
+}, {
+  "n": "Continence",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You abstain from sexual activity, whether by vow or by personal choice."
+}, {
+  "n": "Covenant Upbringing",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "Raised in an isolated covenant, you find ordinary medieval society and religion strange."
+}, {
+  "n": "Delusion",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You wholeheartedly believe something untrue, such as that an imaginary friend is real."
+}, {
+  "n": "Depressed",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "A dark outlook robs you of motivation and of pleasure in anything."
+}, {
+  "n": "Dutybound",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You follow a strict code that forbids useful but dishonorable acts like lying or stealing."
+}, {
+  "n": "Faerie Upbringing",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "Raised by or among faeries, you see the world through their strange lens."
+}, {
+  "n": "Fear",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You are terrified of something you meet fairly often, which leaves you edgy in its presence."
+}, {
+  "n": "Fickle Nature",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You swing between two opposite behaviors with no middle ground; take a Personality Trait at +4 and its opposite at +4."
+}, {
+  "n": "Follower",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You rarely take the initiative and prefer to follow a decisive leader you can attach yourself to."
+}, {
+  "n": "Foreign Upbringing",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You hail from a remote, isolated corner of Mythic Europe and seem foreign to those around you."
+}, {
+  "n": "Grudge",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You hold a bitter grudge against someone in your normal social circle over a past event."
+}, {
+  "n": "Humble",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You readily assume others are more skilled and worthy than yourself."
+}, {
+  "n": "Imagined Folk Tradition Vulnerability",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You wrongly believe a folk method can undo your magic, which can still affect you mechanically."
+}, {
+  "n": "Lost Love",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "Having lost your true love, you take little joy in life and give up easily when things turn hard."
+}, {
+  "n": "Magical Fascination",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You are obsessed with the supernatural, finding ordinary life hollow without it."
+}, {
+  "n": "Noncombatant",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You have no taste or talent for fighting and may freeze or flee in a battle."
+}, {
+  "n": "Pessimistic",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You always expect the worst and are sure misfortune will single you out."
+}, {
+  "n": "Poor Memory",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You badly struggle to recall one kind of thing, such as names, faces, or places."
+}, {
+  "n": "Reclusive",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You resent being disturbed and treat intrusions on your time as insults."
+}, {
+  "n": "Secretive",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You keep secrets even from allies, rarely explaining what you do or why."
+}, {
+  "n": "Seeker",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You are driven to hunt down ancient magic and arcane artifacts as a self-styled Seeker."
+}, {
+  "n": "Sheltered Upbringing",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "Raised cut off from society, you are easily overwhelmed by the wider world."
+}, {
+  "n": "Short Attention Span",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You struggle to keep focus, so watching, listening, or following a plan is hard for you."
+}, {
+  "n": "Simple-Minded",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You can hold only one task in mind at a time and are easily confused without clear instructions."
+}, {
+  "n": "Slothful",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You are lazy and full of excuses for why nothing need be done right now."
+}, {
+  "n": "Soft-Hearted",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You cannot bear to cause or witness suffering, even an enemy's, and avoid danger for all."
+}, {
+  "n": "Temperate",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You never over-indulge in any sensual pleasures."
+}, {
+  "n": "Weak-Willed",
+  "k": "Flaw",
+  "c": "Personality",
+  "s": "Minor",
+  "d": "You look to others for guidance and badly need someone you can trust."
+}, {
+  "n": "A Deal with the Devil",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You sold your soul to the devil and are bound for damnation unless you can escape the bargain."
+}, {
+  "n": "Abandoned Apprentice",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Your master abandoned your Hermetic training; you cast like a magus but are not in the Order."
+}, {
+  "n": "Bigamist",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You secretly keep two spouses and households in two cities, forever juggling both lives."
+}, {
+  "n": "Black Sheep",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You are estranged from a prestigious family who want nothing to do with you, except to punish or use you."
+}, {
+  "n": "Curse of Venus",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You attract unwanted suitors and keep falling for the wrong people at the wrong times."
+}, {
+  "n": "Dark Secret",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "A shameful secret haunts you, and discovery would bring rejection, ruin, or revenge."
+}, {
+  "n": "Dependent",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You feel bound to protect a weaker person who keeps needing your help."
+}, {
+  "n": "Diabolic Past",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You once ran with diabolists and, though reformed, remain haunted by that history."
+}, {
+  "n": "Difficult Underlings",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "However carefully you choose them, your underlings always end up causing you trouble."
+}, {
+  "n": "Enemies",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "A powerful foe, such as a baron, bishop, or outlaw band, actively works against you."
+}, {
+  "n": "Envied Beauty",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Your beauty draws jealousy and revulsion, especially from the vain of your own gender."
+}, {
+  "n": "Evil Destiny",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "The Infernal has taken an interest in you for reasons you do not understand."
+}, {
+  "n": "Excommunicate",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Cast out of the Church, you have a bad Reputation of 3 there and cannot receive the sacraments."
+}, {
+  "n": "Favors",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You owe a debt to someone who may call it in at any time, with serious consequences for refusing."
+}, {
+  "n": "Feud",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Your family is locked in a feud with rivals of similar strength, and you are expected to take part."
+}, {
+  "n": "Fury",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "A violent temper sometimes seizes you, throwing you into an uncontrollable, destructive rage."
+}, {
+  "n": "Indiscreet",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You cannot keep a secret, blurting things out unless you make an Intelligence roll against Ease Factor 9."
+}, {
+  "n": "Many Marriageable Daughters",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You have many daughters to marry off suitably, which keeps drawing you into stories."
+}, {
+  "n": "Mistaken Identity",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Someone who looks just like you commits crimes and outrages that get blamed on you."
+}, {
+  "n": "Monastic Vows",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You are sworn to poverty, chastity, and obedience to a religious superior."
+}, {
+  "n": "Oath of Fealty",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You are bound by an oath of loyalty to someone outside the covenant who may call on you (forbidden to magi by the Code)."
+}, {
+  "n": "Plagued by Supernatural Entity",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "A supernatural being meddles in your life on a regular basis, dragging you into stories."
+}, {
+  "n": "Rector/Proctor",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "As a university leader you answer for your colleagues' behavior and academic concerns."
+}, {
+  "n": "Servant of the (Land)",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "A powerful magical creature once saved you, and in return set you a binding task."
+}, {
+  "n": "Supernatural Nuisance",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "A kind of supernatural creature pesters you in minor ways whenever you are near them."
+}, {
+  "n": "Suppressed Gift",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You have The Gift but have lost access to its power through mishap or misfortune."
+}, {
+  "n": "Tainted Offspring",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Your child is marked by a demon for dark purposes, and you must struggle to protect them."
+}, {
+  "n": "Tormenting Master",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Your former master refuses to accept your Gauntlet and harasses you with political attacks."
+}, {
+  "n": "Tragic Life",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "Demons have manipulated your life so that you react to key events to your own ruin."
+}, {
+  "n": "True Love (NPC)",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You have a true love who is an NPC, whose welfare and dangers keep pulling you into stories."
+}, {
+  "n": "Tzadik Nistar",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You are one of the 36 hidden righteous on whom the world depends, destined for a great moral test."
+}, {
+  "n": "Unbaptized",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You are an unbaptized Christian, perhaps to protect a supernatural nature that baptism might undo."
+}, {
+  "n": "Unhappily Married",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You married for money or politics rather than love and seek solace outside your marriage."
+}, {
+  "n": "University Dean",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You head a university, overseeing its dealings with the town and disputes among masters and students."
+}, {
+  "n": "Vendetta",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You are caught up in a Verditius vendetta, usually inherited, that stops just short of real injury."
+}, {
+  "n": "Vengeful Powers",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "The Infernal watches your non-Infernal powers, twisting them with nasty side effects when used innocently."
+}, {
+  "n": "Wanderlust",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Major",
+  "d": "You cannot bear to stay in one place more than a season before the urge to travel takes you."
+}, {
+  "n": "Animal Companion",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "A loyal, clever (but mundane) animal travels with you, and its loss would devastate you."
+}, {
+  "n": "Beloved Rival",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You have a rival who fiercely opposes you at every turn yet is just as fiercely protective of you."
+}, {
+  "n": "Blackmail",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You hold a powerful person's secret and trade your silence for payments or favors."
+}, {
+  "n": "Close Family Ties",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "Your family is central to your life and still supports you, even at personal risk."
+}, {
+  "n": "Demonic Familiar",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You are bound to a demon disguised as a familiar that lends you its senses and masks your taint."
+}, {
+  "n": "Employed by Company",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You are a salaried agent of a merchant company, answerable to your employer."
+}, {
+  "n": "Faerie Friend",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You have a faerie ally whose aid depends on its power and its whims."
+}, {
+  "n": "Heir",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You stand to inherit land and perhaps wealth, but rivals may try to remove you from the succession."
+}, {
+  "n": "Hermetic Patron",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You, a Redcap or magus, serve a Hermetic patron who calls on you from time to time."
+}, {
+  "n": "Impious Friend",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "A minor demon poses as your friend, usually unseen by those without the right senses."
+}, {
+  "n": "Magical (Being) Companion",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "An intelligent magical being travels with you and needs your regular care."
+}, {
+  "n": "Manufactured Ignorance",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "Demons feed you false evidence to sustain a delusion they have crafted for you."
+}, {
+  "n": "Mentor",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "An influential mentor gives you advice and minor aid, but will ask favors of you in return."
+}, {
+  "n": "Primogeniture Lineage",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You are distantly in line to become Primus of House Verditius."
+}, {
+  "n": "Weak Personality",
+  "k": "Flaw",
+  "c": "Story",
+  "s": "Minor",
+  "d": "You lack strong traits, so all your Personality Traits must fall between +1 and -1."
+}, {
+  "n": "Outlaw",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Major",
+  "d": "You have been outlawed and live by your wits; you may take Martial Abilities and carry a Reputation of 2."
+}, {
+  "n": "Branded Criminal",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A brand on your cheek marks past crime; you cannot be Wealthy but may take Martial Abilities."
+}, {
+  "n": "Companion Animal",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You are another character's Animal Companion, with little control over your own life."
+}, {
+  "n": "Failed Journeyman",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Expelled from your guild for misconduct, you may not legally practice or sell your trade in town."
+}, {
+  "n": "Failed Master",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Having ruined your workshop, you must work as a journeyman to practice your trade legally."
+}, {
+  "n": "Failed Monk/Nun",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You left or were expelled from monastic life, keeping some learning but bearing the stigma."
+}, {
+  "n": "Gabai",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Appointed by the community, you serve as the local Jewish tax collector for community levies."
+}, {
+  "n": "Outcast",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "Rejected by ordinary society and tied to no covenant, you must make your own way alone."
+}, {
+  "n": "Outlaw Leader",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You command a small band of three to six outlaws who look to you for leadership and provision."
+}, {
+  "n": "Outsider",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You belong to a readily identified, distrusted group, such as Jews or foreigners in much of Europe."
+}, {
+  "n": "Surgical Empiricus",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "A narrowly trained surgeon, skilled in only a single aspect of Chirurgy."
+}, {
+  "n": "Usurer",
+  "k": "Flaw",
+  "c": "Social Status",
+  "s": "Minor",
+  "d": "You lend money at interest rates that many people consider abusive."
+}];
+const VF_BY_NAME = Object.fromEntries(VF.map(v => [v.n, v]));
+const VF_ORDER = [["Virtue", "Hermetic", "Major"], ["Virtue", "Hermetic", "Minor"], ["Virtue", "Supernatural", "Major"], ["Virtue", "Supernatural", "Minor"], ["Virtue", "Supernatural", "Free"], ["Virtue", "General", "Major"], ["Virtue", "General", "Minor"], ["Virtue", "Social Status", "Major"], ["Virtue", "Social Status", "Minor"], ["Virtue", "Social Status", "Free"], ["Virtue", "Mythic Companion", "Free"], ["Flaw", "Hermetic", "Major"], ["Flaw", "Hermetic", "Minor"], ["Flaw", "Supernatural", "Major"], ["Flaw", "Supernatural", "Minor"], ["Flaw", "General", "Major"], ["Flaw", "General", "Minor"], ["Flaw", "Personality", "Minor"], ["Flaw", "Story", "Major"], ["Flaw", "Story", "Minor"], ["Flaw", "Social Status", "Major"], ["Flaw", "Social Status", "Minor"]];
+const vfPoints = s => s === "Major" ? 3 : s === "Minor" ? 1 : 0;
 const HOUSE_DATA = [{
   house: "Bonisagus",
   cat: "True Lineage",
